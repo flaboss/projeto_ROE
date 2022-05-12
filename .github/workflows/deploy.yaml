@@ -1,0 +1,22 @@
+name: Master deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Dockerhub login
+      env:
+        DOCKER_USER: ${{secrets.DOCKERHUB_USER}}
+        DOCKER_PASSWORD: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
+      run: |
+        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+    - name: Build the Docker Image
+      run: docker build . --file Dockerfile --tag flvbssln/roe_deepnote:$(date +%s)
+    - name: Docker Push
+      run: docker push ${{secrets.DOCKERHUB_USER}}/roe_deepnote
