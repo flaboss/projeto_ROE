@@ -1,0 +1,4 @@
+pandas_datareader==0.10.0
+yfinance==0.1.70
+pushbullet.py==0.12.0
+pandasql==0.7.3
