@@ -19,4 +19,4 @@ jobs:
     - name: Build the Docker Image
       run: docker build . --file Dockerfile --tag flvbssln/roe_deepnote:$(date +%s)
     - name: Docker Push
-      run: docker push ${{secrets.DOCKERHUB_USER}}/roe_deepnote
+      run: docker push ${{secrets.DOCKERHUB_USER}}/roe_deepnote:$(date +%s)
