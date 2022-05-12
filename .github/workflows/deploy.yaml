@@ -17,6 +17,6 @@ jobs:
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
     - name: Build the Docker Image
-      run: docker build . --file Dockerfile --tag flvbssln/roe_deepnote:$(date +%s)
+      run: docker build . --file Dockerfile --tag flvbssln/roe_deepnote:v1
     - name: Docker Push
-      run: docker push ${{secrets.DOCKERHUB_USER}}/roe_deepnote:$(date +%s)
+      run: docker push ${{secrets.DOCKERHUB_USER}}/roe_deepnote:v1
