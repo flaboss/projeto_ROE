@@ -5,6 +5,7 @@ import pandas as pd
 import os
 import requests
 from pushbullet import Pushbullet
+from pandas_datareader import data as web
 
 load_dotenv('.env')
 
@@ -64,5 +65,45 @@ def send_telegram_message(message):
     resp = requests.get(send_text, params={'chat_id': chid, 'parse_mode': 'Markdown', 'text': message})
     return resp.json()
 
-def get_options_data():
-    pass
+def get_stock_price(ticker):
+    '''
+    Function to fetch stock last price from yahoo finance
+    '''
+    return web.get_data_yahoo(f'{ticker}.sa')[-1:].Close[0]
+
+def list_stock_options_by_exp_date(ticker, exp_date):
+    '''
+    Lists all stock options given an expiration date
+    '''
+    url = f'https://opcoes.net.br/listaopcoes/completa?idAcao={ticker}&listarVencimentos=False&cotacoes=true&vencimentos={exp_date}'
+    r = requests.get(url).json()
+    data = [[ticker, exp_date, i[0].split('_')[0], i[2], i[3],  i[5], i[8], i[9]] for i in r['data']['cotacoesOpcoes']]
+    return pd.DataFrame(data, columns=['acao', 'op_venc', 'opcao', 'tipo', 'modelo', 'op_strike', 'op_vlr', 'num_negoc'])
+
+def list_stock_options(ticker, future_dt):
+    '''
+    Fetches all stock options until a defined future date
+    '''
+    url= f'https://opcoes.net.br/listaopcoes/completa?idAcao={ticker}&listarVencimentos=true&cotacoes=true'
+    r = requests.get(url).json()
+    vencimentos = [i['value'] for i in r['data']['vencimentos'] if i['value'] <= future_dt]
+    data =  pd.concat([list_stock_options_by_exp_date(ticker, vencimento) for vencimento in vencimentos])
+    return data.dropna()
+
+def get_options_data(ticker_list, future_dt):
+    options = []
+
+    for ticker in ticker_list:
+        try:
+            stock_price = get_stock_price(ticker)
+            options_data = list_stock_options(ticker)
+            options_data['acao_vlr'] = stock_price
+            options.append(options_data.values.tolist())
+        except:
+            send_telegram_message(f'Falha ao importar dados de {ticker}')
+            pass
+
+
+    df_options = pd.concat(pd.DataFrame(i) for i in options)
+    df_options.columns = ['acao', 'op_venc', 'opcao', 'tipo', 'modelo', 'op_strike', 'op_vlr', 'num_negoc', 'acao_vlr']
+    return df_options
