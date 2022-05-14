@@ -21,7 +21,10 @@ today = date.today().strftime("%Y/%m/%d")
 d_minus_1 = (dateutil.parser.parse(today) - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
 future_date = (dateutil.parser.parse(today) + datetime.timedelta(days=configs['NUM_MESES']['value']*30)).strftime('%Y-%m-%d')
 
-# importing data
+###
+# IMPORTING DATA
+###
+
 logger.info('Importando dados.')
 try:
     #ticker_df = get_airtable_data('stocks_to_process')
@@ -33,18 +36,27 @@ try:
 except:
     raise Exception('Falha ao importar os dados de opções.')
 
-# strategies
-try:
-    v_put = venda_put_a_seco(options_df)
-    print(v_put.head())
-    logger.info('estratégia de venda de put a seco calculada com sucesso.')
-except:
-    raise Exception('Falha ao calcular estratégia de venda de put a seco.')
+###
+# STRATEGIES
+###
+
+# venda de put
+if configs['VENDA_PUT_DECIDER']['value'] == 1:
+    logger.info('Iniciando execução de estratégia de venda de put.')
+    try:
+        v_put = venda_put_a_seco(options_df)
+        print(v_put.head())
+        logger.info('estratégia de venda de put a seco calculada com sucesso.')
+    except:
+        raise Exception('Falha ao calcular estratégia de venda de put a seco.')
+else:
+    logger.warning('Estratégia de venda de put não será executada.')
 
 
 
-# add strategies decider
 
-# push notifications
+###
+# NOTIFICATIONS
+###
 # send_push_notification("title", "message")
 # send_telegram_message("test message")

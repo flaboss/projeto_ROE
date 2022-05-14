@@ -25,5 +25,7 @@ def venda_put_a_seco(df):
 
     v_put['prob_acima'] = v_put.apply(stock_price_probability_given_distribution, axis = 1)
     v_put['prob_acima'] = v_put['prob_acima'] *100
+    v_put = v_put[['opcao', 'num_negoc', 'acao', 'acao_vlr', 'op_strike', 'op_vlr', 'op_venc', 'premio_perc', 
+                    'strike_diff', 'strike_perc', 'prob_acima']].reset_index(drop=True)
 
     return v_put
