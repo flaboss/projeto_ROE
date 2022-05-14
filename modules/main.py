@@ -28,4 +28,4 @@ ticker_list = ['VALE3', 'SUZB3']
 
 options_df = get_options_data(ticker_list, future_date)
 
-print(options_df.head())
+print(options_df.head()) 

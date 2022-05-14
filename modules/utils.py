@@ -96,7 +96,7 @@ def get_options_data(ticker_list, future_dt):
     for ticker in ticker_list:
         try:
             stock_price = get_stock_price(ticker)
-            options_data = list_stock_options(ticker)
+            options_data = list_stock_options(ticker, future_dt)
             options_data['acao_vlr'] = stock_price
             options.append(options_data.values.tolist())
         except:
