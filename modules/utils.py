@@ -119,24 +119,29 @@ def get_options_data(ticker_list, future_dt):
     
     return df_options
 
-def stock_price_probability_given_distribution(row, lookback):
+def stock_price_probability_given_distribution(row):
     '''
     Computes the probability of a stock price being above a threshold given past data distribution.
     '''
-    diff = (row.op_venc - pd.to_datetime(date.today())).days
-    ticker = row.acao
-    strike = row.op_strike
-    vlr_acao = row.acao_vlr
-    dt_inic = (date.today() + datetime.timedelta(weeks=-52*lookback))
-    tmp_df = web.get_data_yahoo(f'{ticker}.sa', dt_inic, date.today())
-    tmp_df['close_shifted'] = tmp_df['Close'].shift(periods = diff)
-    tmp_df['return'] = tmp_df['Close']/tmp_df['close_shifted'] -1
-    desv = tmp_df['return'].std()
-    media = tmp_df['return'].mean()
-    return_periodo = strike/vlr_acao-1
-    z = (return_periodo - media)/desv
-    prob_acima = round(1-norm.cdf(z),2)
+    configs = get_airtable_data('config')
+    configs = configs.set_index('key').T.to_dict()
+    lookback = configs['DATA_LOOKBACK_YEARS']['value']
+    
+    try:
+        diff = (row.op_venc - pd.to_datetime(date.today())).days
+        ticker = row.acao
+        strike = row.op_strike
+        vlr_acao = row.acao_vlr
+        dt_inic = (date.today() + datetime.timedelta(weeks=-52*lookback))
+        tmp_df = web.get_data_yahoo(f'{ticker}.sa', dt_inic, date.today())
+        tmp_df['close_shifted'] = tmp_df['Close'].shift(periods = diff)
+        tmp_df['return'] = tmp_df['Close']/tmp_df['close_shifted'] -1
+        desv = tmp_df['return'].std()
+        media = tmp_df['return'].mean()
+        return_periodo = strike/vlr_acao-1
+        z = (return_periodo - media)/desv
+        prob_acima = round(1-norm.cdf(z),2)
+    except:
+        raise Exception('Falha ao computar probabilidade de preço da ação.')
 
     return prob_acima
-
-#DATA_LOOKBACK_YEARS
