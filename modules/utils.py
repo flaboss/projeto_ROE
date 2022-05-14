@@ -92,6 +92,7 @@ def list_stock_options(ticker, future_dt):
 
 def get_options_data(ticker_list, future_dt):
     options = []
+    logger = custom_logger()
 
     for ticker in ticker_list:
         try:
@@ -101,9 +102,16 @@ def get_options_data(ticker_list, future_dt):
             options.append(options_data.values.tolist())
         except:
             send_telegram_message(f'Falha ao importar dados de {ticker}')
+            logger.error(f'Falha ao importar dados de {ticker}')
             pass
-
 
     df_options = pd.concat(pd.DataFrame(i) for i in options)
     df_options.columns = ['acao', 'op_venc', 'opcao', 'tipo', 'modelo', 'op_strike', 'op_vlr', 'num_negoc', 'acao_vlr']
+
+    # new columns
+    df_options['premio_perc'] = (df_options['op_vlr'] / df_options['op_strike']) *100
+    df_options['strike_diff'] = df_options['op_strike'] - df_options['acao_vlr']
+    df_options['strike_perc'] = ((df_options['op_strike'] / df_options['acao_vlr']) -1) *100
+    df_options['op_venc'] = pd.to_datetime(df_options['op_venc'],infer_datetime_format=True)
+    
     return df_options
