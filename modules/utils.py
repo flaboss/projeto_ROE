@@ -6,6 +6,9 @@ import os
 import requests
 from pushbullet import Pushbullet
 from pandas_datareader import data as web
+from datetime import date
+import datetime
+from scipy.stats import norm
 
 load_dotenv('.env')
 
@@ -115,3 +118,25 @@ def get_options_data(ticker_list, future_dt):
     df_options['op_venc'] = pd.to_datetime(df_options['op_venc'],infer_datetime_format=True)
     
     return df_options
+
+def stock_price_probability_given_distribution(row, lookback):
+    '''
+    Computes the probability of a stock price being above a threshold given past data distribution.
+    '''
+    diff = (row.op_venc - pd.to_datetime(date.today())).days
+    ticker = row.acao
+    strike = row.op_strike
+    vlr_acao = row.acao_vlr
+    dt_inic = (date.today() + datetime.timedelta(weeks=-52*lookback))
+    tmp_df = web.get_data_yahoo(f'{ticker}.sa', dt_inic, date.today())
+    tmp_df['close_shifted'] = tmp_df['Close'].shift(periods = diff)
+    tmp_df['return'] = tmp_df['Close']/tmp_df['close_shifted'] -1
+    desv = tmp_df['return'].std()
+    media = tmp_df['return'].mean()
+    return_periodo = strike/vlr_acao-1
+    z = (return_periodo - media)/desv
+    prob_acima = round(1-norm.cdf(z),2)
+
+    return prob_acima
+
+#DATA_LOOKBACK_YEARS

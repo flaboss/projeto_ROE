@@ -9,3 +9,6 @@ format:
 
 lint:
 	pylint --disable=R,C *.py
+
+requirements:
+	pip install -r requirements.txt

@@ -5,4 +5,5 @@ pushbullet.py==0.12.0
 pylint==2.13.9
 pytest==7.1.2
 python-dotenv==0.20.0
+scipy==1.7.3
 yfinance==0.1.70
