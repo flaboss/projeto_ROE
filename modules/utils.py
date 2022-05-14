@@ -9,6 +9,7 @@ from pandas_datareader import data as web
 from datetime import date
 import datetime
 from scipy.stats import norm
+import datapane as dp
 
 load_dotenv('.env')
 
@@ -145,3 +146,11 @@ def stock_price_probability_given_distribution(row):
         raise Exception('Falha ao computar probabilidade de preço da ação.')
 
     return prob_acima
+
+def push_df_to_datapane_reports(dataframes, report_name):
+    api_key = os.environ["DATAPANE_API_KEY"]
+    os.system(f'!datapane login --{api_key}')
+
+    dp.Report(
+        dp.DataTable(dataframes)
+    ).upload(name=report_name)

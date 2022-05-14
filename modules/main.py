@@ -3,7 +3,7 @@ Main module to run the entire pipeline
 '''
 
 from utils import get_airtable_data, send_push_notification, send_telegram_message
-from utils import get_options_data, custom_logger
+from utils import get_options_data, custom_logger, push_df_to_datapane_reports
 import datetime
 from datetime import date
 import dateutil
@@ -45,7 +45,7 @@ if configs['VENDA_PUT_DECIDER']['value'] == 1:
     logger.info('Iniciando execução de estratégia de venda de put.')
     try:
         v_put = venda_put_a_seco(options_df)
-        print(v_put.head())
+        
         logger.info('estratégia de venda de put a seco calculada com sucesso.')
     except:
         raise Exception('Falha ao calcular estratégia de venda de put a seco.')
@@ -53,7 +53,7 @@ else:
     logger.warning('Estratégia de venda de put não será executada.')
 
 
-
+push_df_to_datapane_reports(v_put, 'Estrategias de Opções')
 
 ###
 # NOTIFICATIONS
