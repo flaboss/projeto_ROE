@@ -7,7 +7,9 @@ from utils import get_options_data, custom_logger, push_df_to_datapane_reports
 import datetime
 from datetime import date
 import dateutil
+from pandasql import sqldf
 from venda_put_seco import venda_put_a_seco
+from trava_alta_put import trava_de_alta_com_put
 
 logger = custom_logger()
 logger.info('Inicio do processamento.')
@@ -15,6 +17,10 @@ logger.info('Inicio do processamento.')
 # getting config params
 configs = get_airtable_data('config')
 configs = configs.set_index('key').T.to_dict()
+
+# getting deciders
+deciders = get_airtable_data('deciders')
+deciders = deciders.set_index('key').T.to_dict()
 
 # dates
 today = date.today().strftime("%Y/%m/%d")
@@ -41,19 +47,55 @@ except:
 ###
 
 # venda de put
-if configs['VENDA_PUT_DECIDER']['value'] == 1:
-    logger.info('Iniciando execução de estratégia de venda de put.')
+if deciders['VENDA_PUT_DECIDER']['value'] == True:
+    logger.info('Iniciando execução de estratégia de venda de put a seco.')
     try:
         v_put = venda_put_a_seco(options_df)
-        
         logger.info('estratégia de venda de put a seco calculada com sucesso.')
     except:
         raise Exception('Falha ao calcular estratégia de venda de put a seco.')
 else:
-    logger.warning('Estratégia de venda de put não será executada.')
+    v_put = None
+    logger.warning('Estratégia de venda de put a seco não será executada.')
+
+# trava de alta com put
 
 
-push_df_to_datapane_reports(v_put, 'Estrategias de Opções')
+if deciders['TRAVA_ALTA_PUT_DECIDER']['value'] == True:
+    logger.info('Iniciando execução de estratégia de trava de alta com put.')
+
+    # check if v_put exists
+    if v_put is None:
+        v_put = venda_put_a_seco(options_df)
+
+    # create a self joined table
+    pysqldf = lambda q: sqldf(q, globals())
+    query = f"""
+    select upper.acao, upper.acao_vlr, upper.op_venc, upper.opcao as upper_leg_opcao, upper.op_strike as upper_leg_strike, 
+        upper.op_vlr as upper_leg_vlr, lower.opcao as lower_leg_opcao, lower.op_strike as lower_leg_strike, 
+        lower.op_vlr as lower_leg_vlr, upper.prob_acima as prob_sucesso
+    from v_put upper
+    inner join v_put lower
+        on upper.acao = lower.acao and upper.op_vlr > lower.op_vlr and upper.op_venc = lower.op_venc;
+    """
+    self_join_df = pysqldf(query)
+
+    try:
+        ta_put = trava_de_alta_com_put(self_join_df)
+        
+        logger.info('estratégia de trava de alta com put calculada com sucesso.')
+    except:
+        raise Exception('Falha ao calcular estratégia trava de alta com put.')
+else:
+    logger.warning('Estratégia de trava de alta com put não será executada.')
+
+print(ta_put.head())
+
+
+###
+# REPORT
+###
+#push_df_to_datapane_reports(v_put, 'Estrategias de Opções')
 
 ###
 # NOTIFICATIONS
