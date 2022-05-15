@@ -11,7 +11,7 @@ from pandasql import sqldf
 from venda_put_seco import venda_put_a_seco
 from trava_alta_put import trava_de_alta_com_put
 from capital_garantido import capital_garantido
-from lancamento_coberto import lancamento_coberto_acoes_em_custodia
+from lancamento_coberto import lancamento_coberto_acoes_em_custodia, lancamento_coberto_estrategia_OTM
 
 logger = custom_logger()
 logger.info('Inicio do processamento.')
@@ -130,14 +130,19 @@ else:
 # lancamento coberto para acoes em custodia
 if deciders['LANC_COBERTO_ACOES_CARTEIRA']['value'] == True:
     logger.info('Iniciando execução de estratégia de lançamento coberto de ações em custodia.')
-    l_coberto_custodia = lancamento_coberto_acoes_em_custodia(options_df, configs['NUM_NEGOC_MIN']['value'])
+    l_coberto_custodia = lancamento_coberto_acoes_em_custodia(options_df)
     logger.info('estratégia de lançamento coberto de ações em custódia calculada com sucesso.')
 else:
     logger.warning('Estratégia de lançamento coberto de ações em custódia não será executada.')
 
 # lancamento coberto estrategia OTM
+if deciders['LANC_COBERTO_OTM']['value'] == True:
+    logger.info('Iniciando execução de estratégia de lançamento coberto OTM.')
+    l_coberto_OTM = lancamento_coberto_estrategia_OTM(options_df)
+    logger.info('estratégia de lançamento coberto OTM calculada com sucesso.')
+else:
+    logger.warning('Estratégia de lançamento coberto OTM não será executada.')
   
-
 
 
 

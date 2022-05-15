@@ -7,7 +7,11 @@ from utils import get_airtable_data, get_stock_price
 
 today = date.today().strftime("%Y/%m/%d")
 
-def lancamento_coberto_acoes_em_custodia(df, num_negoc_min):
+# getting config params
+configs = get_airtable_data('config')
+configs = configs.set_index('key').T.to_dict()
+
+def lancamento_coberto_acoes_em_custodia(df):
     '''
     Function to compute covered call strategy of stocks in custody
     '''
@@ -30,7 +34,7 @@ def lancamento_coberto_acoes_em_custodia(df, num_negoc_min):
 
     l_coberto_carteira = l_coberto_carteira[['opcao', 'num_negoc', 'acao', 'acao_pm', 'acao_strike_atual','op_strike', 
                                             'op_vlr','op_venc', 'retorno_total']][(l_coberto_carteira.tipo=='CALL') \
-                        & (l_coberto_carteira['op_venc'] > today) & (l_coberto_carteira['num_negoc'] >= num_negoc_min)]
+                        & (l_coberto_carteira['op_venc'] > today) & (l_coberto_carteira['num_negoc'] >= configs['NUM_NEGOC_MIN']['value'])]
 
     l_coberto_carteira['LP'] = l_coberto_carteira['retorno_total'] - l_coberto_carteira['acao_pm']
     l_coberto_carteira['LP_perc'] = ((l_coberto_carteira['retorno_total'] / l_coberto_carteira['acao_pm']) -1) *100
@@ -40,3 +44,23 @@ def lancamento_coberto_acoes_em_custodia(df, num_negoc_min):
     l_coberto_carteira = l_coberto_carteira[(l_coberto_carteira.LP > 0)].reset_index(drop = True)
 
     return l_coberto_carteira
+
+def lancamento_coberto_estrategia_OTM(df):
+    '''
+    Function to compute OTM covered call strategies
+    '''
+    l_coberto = df[['opcao', 'num_negoc', 'acao', 'acao_vlr', 'op_strike', 'op_vlr','op_venc']][(df.tipo=='CALL') \
+                & (df['op_venc'] > today) & (df['num_negoc'] >= configs['NUM_NEGOC_MIN']['value'])]
+    l_coberto['premio_perc'] = (l_coberto['op_vlr'] / l_coberto['acao_vlr']) *100
+    l_coberto['strike_diff'] = l_coberto['op_strike'] - l_coberto['acao_vlr']
+
+    l_coberto['lucro_venda'] = l_coberto['op_strike'] - l_coberto['acao_vlr']
+    l_coberto['lucro_venda_perc'] = (l_coberto['op_strike'] / l_coberto['acao_vlr'] -1) *100
+    l_coberto.sort_values(by='premio_perc', ascending=False, inplace=True)
+
+    l_coberto = l_coberto[(l_coberto.strike_diff >= configs['LC_STRIKE_VLR_DIFF_LOWER']['value']) & \
+                        (l_coberto.premio_perc > configs['PERC_CUTOFF']['value'])].reset_index(drop = True)
+
+    return l_coberto
+
+
