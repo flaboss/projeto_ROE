@@ -149,7 +149,7 @@ def stock_price_probability_given_distribution(row):
 
 def push_df_to_datapane_reports(dataframes, report_name):
     api_key = os.environ["DATAPANE_API_KEY"]
-    os.system(f'!datapane login --{api_key}')
+    os.system(f"datapane login --token '{api_key}'")
 
     dp.Report(
         dp.DataTable(dataframes)

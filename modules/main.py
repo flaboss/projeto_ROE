@@ -10,6 +10,7 @@ import dateutil
 from pandasql import sqldf
 from venda_put_seco import venda_put_a_seco
 from trava_alta_put import trava_de_alta_com_put
+from capital_garantido import capital_garantido
 
 logger = custom_logger()
 logger.info('Inicio do processamento.')
@@ -59,8 +60,6 @@ else:
     logger.warning('Estratégia de venda de put a seco não será executada.')
 
 # trava de alta com put
-
-
 if deciders['TRAVA_ALTA_PUT_DECIDER']['value'] == True:
     logger.info('Iniciando execução de estratégia de trava de alta com put.')
 
@@ -70,7 +69,7 @@ if deciders['TRAVA_ALTA_PUT_DECIDER']['value'] == True:
 
     # create a self joined table
     pysqldf = lambda q: sqldf(q, globals())
-    query = f"""
+    query = """
     select upper.acao, upper.acao_vlr, upper.op_venc, upper.opcao as upper_leg_opcao, upper.op_strike as upper_leg_strike, 
         upper.op_vlr as upper_leg_vlr, lower.opcao as lower_leg_opcao, lower.op_strike as lower_leg_strike, 
         lower.op_vlr as lower_leg_vlr, upper.prob_acima as prob_sucesso
@@ -89,7 +88,44 @@ if deciders['TRAVA_ALTA_PUT_DECIDER']['value'] == True:
 else:
     logger.warning('Estratégia de trava de alta com put não será executada.')
 
-print(ta_put.head())
+# capital garantido 
+if deciders['CAPITAL_GARANTIDO_DECIDER']['value'] == True:
+    logger.info('Iniciando execução de estratégia de trava de capital garantido.')
+
+    PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO = configs['PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO']['value']
+    
+    df_cap_garantido_strikes = options_df[(options_df.op_strike >= options_df.acao_vlr - (options_df.acao_vlr \
+        * PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO))
+        & (options_df.op_strike <= options_df.acao_vlr * (1+PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO))]
+
+    pysqldf = lambda q: sqldf(q, globals())
+    query = """
+    with put as (
+        select * 
+        from df_cap_garantido_strikes
+        where tipo = 'PUT'
+    ),
+
+    call as (
+        select * 
+        from df_cap_garantido_strikes
+        where tipo = 'CALL'
+    )
+
+    select call.acao, call.op_venc, call.acao_vlr, call.opcao as venda_call, call.op_strike as call_strike,
+        call.op_vlr as call_premio, put.opcao as compra_put, put.op_strike as put_strike, put.op_vlr as put_premio
+    from call
+    inner join put
+        on call.acao = put.acao and call.op_venc = put.op_venc
+    """
+
+    df_cap_garantido = pysqldf(query)
+    df_cap_garantido = capital_garantido(df_cap_garantido)
+
+    push_df_to_datapane_reports(df_cap_garantido, 'Estrategias de Opções')
+
+
+
 
 
 ###
