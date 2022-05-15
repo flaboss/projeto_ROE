@@ -12,6 +12,7 @@ from venda_put_seco import venda_put_a_seco
 from trava_alta_put import trava_de_alta_com_put
 from capital_garantido import capital_garantido
 from lancamento_coberto import lancamento_coberto_acoes_em_custodia, lancamento_coberto_estrategia_OTM
+from lancamento_coberto import lancamento_coberto_custo_final
 
 logger = custom_logger()
 logger.info('Inicio do processamento.')
@@ -142,8 +143,14 @@ if deciders['LANC_COBERTO_OTM']['value'] == True:
     logger.info('estratégia de lançamento coberto OTM calculada com sucesso.')
 else:
     logger.warning('Estratégia de lançamento coberto OTM não será executada.')
-  
 
+# lancamento coberto custo final
+if deciders['LANC_COBERTO_CUSTO_FINAL']['value'] == True:
+    logger.info('Iniciando execução de estratégia de lançamento coberto baseada no custo final.')
+    l_coberto_custo_final = lancamento_coberto_custo_final(options_df)
+    logger.info('estratégia de lançamento coberto (custo final) calculada com sucesso.')
+else:
+    logger.warning('Estratégia de lançamento coberto (custo final) não será executada.')
 
 
 
