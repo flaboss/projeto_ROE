@@ -30,6 +30,7 @@ today = date.today().strftime("%Y/%m/%d")
 d_minus_1 = (dateutil.parser.parse(today) - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
 future_date = (dateutil.parser.parse(today) + datetime.timedelta(days=configs['NUM_MESES']['value']*30)).strftime('%Y-%m-%d')
 
+
 ###
 # IMPORTING DATA
 ###
@@ -43,6 +44,7 @@ try:
     #print(options_df.head()) #REMOVE
     logger.info('Dados importados com sucesso.')
 except:
+    send_push_notification("Estratégia de opções", "Falha ao importar dados de opções")
     raise Exception('Falha ao importar os dados de opções.')
 
 ###
@@ -56,6 +58,7 @@ if deciders['VENDA_PUT_DECIDER']['value'] == True:
         v_put = venda_put_a_seco(options_df)
         logger.info('estratégia de venda de put a seco calculada com sucesso.')
     except:
+        send_push_notification("Estratégia de opções", "Falha ao executar estratégia de venda de put")
         raise Exception('Falha ao calcular estratégia de venda de put a seco.')
 else:
     v_put = None
@@ -86,73 +89,88 @@ if deciders['TRAVA_ALTA_PUT_DECIDER']['value'] == True:
         
         logger.info('estratégia de trava de alta com put calculada com sucesso.')
     except:
+        send_push_notification("Estratégia de opções", "Falha ao executar estratégia de trava de alta com put.")
         raise Exception('Falha ao calcular estratégia trava de alta com put.')
 else:
     logger.warning('Estratégia de trava de alta com put não será executada.')
 
 # capital garantido 
 if deciders['CAPITAL_GARANTIDO_DECIDER']['value'] == True:
-    logger.info('Iniciando execução de estratégia de trava de capital garantido.')
+    try:
+        logger.info('Iniciando execução de estratégia de trava de capital garantido.')
 
-    PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO = configs['PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO']['value']
-    
-    df_cap_garantido_strikes = options_df[(options_df.op_strike >= options_df.acao_vlr - (options_df.acao_vlr \
-        * PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO))
-        & (options_df.op_strike <= options_df.acao_vlr * (1+PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO))]
+        PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO = configs['PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO']['value']
+        
+        df_cap_garantido_strikes = options_df[(options_df.op_strike >= options_df.acao_vlr - (options_df.acao_vlr \
+            * PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO))
+            & (options_df.op_strike <= options_df.acao_vlr * (1+PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO))]
 
-    pysqldf = lambda q: sqldf(q, globals())
-    query = """
-    with put as (
-        select * 
-        from df_cap_garantido_strikes
-        where tipo = 'PUT'
-    ),
+        pysqldf = lambda q: sqldf(q, globals())
+        query = """
+        with put as (
+            select * 
+            from df_cap_garantido_strikes
+            where tipo = 'PUT'
+        ),
 
-    call as (
-        select * 
-        from df_cap_garantido_strikes
-        where tipo = 'CALL'
-    )
+        call as (
+            select * 
+            from df_cap_garantido_strikes
+            where tipo = 'CALL'
+        )
 
-    select call.acao, call.op_venc, call.acao_vlr, call.opcao as venda_call, call.op_strike as call_strike,
-        call.op_vlr as call_premio, put.opcao as compra_put, put.op_strike as put_strike, put.op_vlr as put_premio
-    from call
-    inner join put
-        on call.acao = put.acao and call.op_venc = put.op_venc
-    """
+        select call.acao, call.op_venc, call.acao_vlr, call.opcao as venda_call, call.op_strike as call_strike,
+            call.op_vlr as call_premio, put.opcao as compra_put, put.op_strike as put_strike, put.op_vlr as put_premio
+        from call
+        inner join put
+            on call.acao = put.acao and call.op_venc = put.op_venc
+        """
 
-    df_cap_garantido = pysqldf(query)
-    df_cap_garantido = capital_garantido(df_cap_garantido)
+        df_cap_garantido = pysqldf(query)
+        df_cap_garantido = capital_garantido(df_cap_garantido)
 
-    logger.info('estratégia de capital garantido calculada com sucesso.')
+        logger.info('estratégia de capital garantido calculada com sucesso.')
+    except:
+        send_push_notification("Estratégia de opções", "Falha ao executar estratégia de capital garantido.")
+        raise Exception('Falha ao calcular estratégia de capital garantido.')
 else:
     logger.warning('Estratégia de capital garantido não será executada.')
 
 # lancamento coberto para acoes em custodia
 if deciders['LANC_COBERTO_ACOES_CARTEIRA']['value'] == True:
-    logger.info('Iniciando execução de estratégia de lançamento coberto de ações em custodia.')
-    l_coberto_custodia = lancamento_coberto_acoes_em_custodia(options_df)
-    logger.info('estratégia de lançamento coberto de ações em custódia calculada com sucesso.')
+    try:
+        logger.info('Iniciando execução de estratégia de lançamento coberto de ações em custodia.')
+        l_coberto_custodia = lancamento_coberto_acoes_em_custodia(options_df)
+        logger.info('estratégia de lançamento coberto de ações em custódia calculada com sucesso.')
+    except:
+        send_push_notification("Estratégia de opções", "Falha ao executar estratégia de lancamento coberto para acoes em custodia.")
+        raise Exception('Falha ao calcular estratégia lancamento coberto para acoes em custodia.')
 else:
     logger.warning('Estratégia de lançamento coberto de ações em custódia não será executada.')
 
 # lancamento coberto estrategia OTM
 if deciders['LANC_COBERTO_OTM']['value'] == True:
-    logger.info('Iniciando execução de estratégia de lançamento coberto OTM.')
-    l_coberto_OTM = lancamento_coberto_estrategia_OTM(options_df)
-    logger.info('estratégia de lançamento coberto OTM calculada com sucesso.')
+    try:
+        logger.info('Iniciando execução de estratégia de lançamento coberto OTM.')
+        l_coberto_OTM = lancamento_coberto_estrategia_OTM(options_df)
+        logger.info('estratégia de lançamento coberto OTM calculada com sucesso.')
+    except:
+        send_push_notification("Estratégia de opções", "Falha ao executar estratégia de lancamento coberto OTM.")
+        raise Exception('Falha ao calcular estratégia lancamento coberto OTM.')
 else:
     logger.warning('Estratégia de lançamento coberto OTM não será executada.')
 
 # lancamento coberto custo final
 if deciders['LANC_COBERTO_CUSTO_FINAL']['value'] == True:
-    logger.info('Iniciando execução de estratégia de lançamento coberto baseada no custo final.')
-    l_coberto_custo_final = lancamento_coberto_custo_final(options_df)
-    logger.info('estratégia de lançamento coberto (custo final) calculada com sucesso.')
+    try:
+        logger.info('Iniciando execução de estratégia de lançamento coberto baseada no custo final.')
+        l_coberto_custo_final = lancamento_coberto_custo_final(options_df)
+        logger.info('estratégia de lançamento coberto (custo final) calculada com sucesso.')
+    except:
+        send_push_notification("Estratégia de opções", "Falha ao executar estratégia de lancamento coberto (custo final).")
+        raise Exception('Falha ao calcular estratégia lancamento coberto (custo final).')
 else:
     logger.warning('Estratégia de lançamento coberto (custo final) não será executada.')
-
-
 
 ###
 # REPORT
