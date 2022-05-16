@@ -33,18 +33,6 @@ def test_get_options_data():
     except Exception:
         logger.error(f'Teste da função {inspect.stack()[0][3]} falhou.')
 
-def test_venda_put_a_seco(df):
-    '''
-    Function to test strategy venda de put a seco
-    '''
-    try:
-        venda_put_a_seco(df)
-        logger.info(f'Teste da função {inspect.stack()[0][3]} passou.')
-    except Exception:
-        logger.error(f'Teste da função {inspect.stack()[0][3]} falhou.')
-
 if __name__ == '__main__':
-    test_airtable_retrieval()
     test_data = test_get_options_data()
-    test_venda_put_a_seco(test_data)
     
