@@ -30,7 +30,7 @@ def venda_put_a_seco(df):
     v_put["prob_acima"] = v_put.apply(
         stock_price_probability_given_distribution, axis=1
     )
-    v_put["prob_acima"] = v_put["prob_acima"] * 100
+    v_put["prob_acima"] = v_put["prob_acima"] 
     v_put = v_put[
         [
             "opcao",

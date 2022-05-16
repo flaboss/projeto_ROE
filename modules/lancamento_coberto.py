@@ -17,6 +17,7 @@ def lancamento_coberto_acoes_em_custodia(df):
     """
     # get stock average cost from airtable
     avg_price = get_airtable_data("avg_cost")
+    avg_price = avg_price[avg_price.available == True]
     tickers_avg_cost = {}
 
     for row in avg_price.iterrows():
