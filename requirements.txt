@@ -1,5 +1,6 @@
 black==22.3.0
 datapane==0.14.0
+flake8==4.0.1
 pandas_datareader==0.10.0
 pandasql==0.7.3
 pushbullet.py==0.12.0

@@ -1,6 +1,6 @@
-'''
+"""
 Main module to run the entire pipeline
-'''
+"""
 
 from utils import get_airtable_data, send_push_notification, send_telegram_message
 from utils import get_options_data, custom_logger, push_df_to_datapane_reports
@@ -11,24 +11,32 @@ from pandasql import sqldf
 from venda_put_seco import venda_put_a_seco
 from trava_alta_put import trava_de_alta_com_put
 from capital_garantido import capital_garantido
-from lancamento_coberto import lancamento_coberto_acoes_em_custodia, lancamento_coberto_estrategia_OTM
+from lancamento_coberto import (
+    lancamento_coberto_acoes_em_custodia,
+    lancamento_coberto_estrategia_OTM,
+)
 from lancamento_coberto import lancamento_coberto_custo_final
 
 logger = custom_logger()
-logger.info('Inicio do processamento.')
+logger.info("Inicio do processamento.")
 
 # getting config params
-configs = get_airtable_data('config')
-configs = configs.set_index('key').T.to_dict()
+configs = get_airtable_data("config")
+configs = configs.set_index("key").T.to_dict()
 
 # getting deciders
-deciders = get_airtable_data('deciders')
-deciders = deciders.set_index('key').T.to_dict()
+deciders = get_airtable_data("deciders")
+deciders = deciders.set_index("key").T.to_dict()
 
 # dates
 today = date.today().strftime("%Y/%m/%d")
-d_minus_1 = (dateutil.parser.parse(today) - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
-future_date = (dateutil.parser.parse(today) + datetime.timedelta(days=configs['NUM_MESES']['value']*30)).strftime('%Y-%m-%d')
+d_minus_1 = (dateutil.parser.parse(today) - datetime.timedelta(days=1)).strftime(
+    "%Y-%m-%d"
+)
+future_date = (
+    dateutil.parser.parse(today)
+    + datetime.timedelta(days=configs["NUM_MESES"]["value"] * 30)
+).strftime("%Y-%m-%d")
 
 # data frames for datapane report
 dfs_to_report = {}
@@ -37,39 +45,40 @@ dfs_to_report = {}
 # IMPORTING DATA
 ###
 
-logger.info('Importando dados.')
+logger.info("Importando dados.")
 try:
-    #ticker_df = get_airtable_data('stocks_to_process')
-    #ticker_list = ticker_df[ticker_df.process_options_strategy == True]['ticker'].to_list()
-    ticker_list = ['VALE3', 'SUZB3']
+    ticker_df = get_airtable_data('stocks_to_process')
+    ticker_list = ticker_df[ticker_df.process_options_strategy is True]['ticker'].to_list()
+    
     options_df = get_options_data(ticker_list, future_date)
-    #print(options_df.head()) #REMOVE
-    logger.info('Dados importados com sucesso.')
-except:
+    logger.info("Dados importados com sucesso.")
+except Exception:
     send_push_notification("Estratégia de opções", "Falha ao importar dados de opções")
-    raise Exception('Falha ao importar os dados de opções.')
+    raise Exception("Falha ao importar os dados de opções.")
 
 ###
 # STRATEGIES
 ###
 
 # venda de put a seco
-if deciders['VENDA_PUT_DECIDER']['value'] == True:
-    logger.info('Iniciando execução de estratégia de venda de put a seco.')
+if deciders["VENDA_PUT_DECIDER"]["value"] is True:
+    logger.info("Iniciando execução de estratégia de venda de put a seco.")
     try:
         v_put = venda_put_a_seco(options_df)
         dfs_to_report["## Venda de put a seco"] = v_put
-        logger.info('estratégia de venda de put a seco calculada com sucesso.')
-    except:
-        send_push_notification("Estratégia de opções", "Falha ao executar estratégia de venda de put")
-        raise Exception('Falha ao calcular estratégia de venda de put a seco.')
+        logger.info("estratégia de venda de put a seco calculada com sucesso.")
+    except Exception:
+        send_push_notification(
+            "Estratégia de opções", "Falha ao executar estratégia de venda de put"
+        )
+        raise Exception("Falha ao calcular estratégia de venda de put a seco.")
 else:
     v_put = None
-    logger.warning('Estratégia de venda de put a seco não será executada.')
+    logger.warning("Estratégia de venda de put a seco não será executada.")
 
 # trava de alta com put
-if deciders['TRAVA_ALTA_PUT_DECIDER']['value'] == True:
-    logger.info('Iniciando execução de estratégia de trava de alta com put.')
+if deciders["TRAVA_ALTA_PUT_DECIDER"]["value"] is True:
+    logger.info("Iniciando execução de estratégia de trava de alta com put.")
 
     # check if v_put exists
     if v_put is None:
@@ -90,23 +99,36 @@ if deciders['TRAVA_ALTA_PUT_DECIDER']['value'] == True:
     try:
         ta_put = trava_de_alta_com_put(self_join_df)
         dfs_to_report["## Trava de Alta com Put"] = ta_put
-        logger.info('estratégia de trava de alta com put calculada com sucesso.')
-    except:
-        send_push_notification("Estratégia de opções", "Falha ao executar estratégia de trava de alta com put.")
-        raise Exception('Falha ao calcular estratégia trava de alta com put.')
+        logger.info("estratégia de trava de alta com put calculada com sucesso.")
+    except Exception:
+        send_push_notification(
+            "Estratégia de opções",
+            "Falha ao executar estratégia de trava de alta com put.",
+        )
+        raise Exception("Falha ao calcular estratégia trava de alta com put.")
 else:
-    logger.warning('Estratégia de trava de alta com put não será executada.')
+    logger.warning("Estratégia de trava de alta com put não será executada.")
 
-# capital garantido 
-if deciders['CAPITAL_GARANTIDO_DECIDER']['value'] == True:
+# capital garantido
+if deciders["CAPITAL_GARANTIDO_DECIDER"]["value"] is True:
     try:
-        logger.info('Iniciando execução de estratégia de trava de capital garantido.')
+        logger.info("Iniciando execução de estratégia de trava de capital garantido.")
 
-        PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO = configs['PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO']['value']
-        
-        df_cap_garantido_strikes = options_df[(options_df.op_strike >= options_df.acao_vlr - (options_df.acao_vlr \
-            * PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO))
-            & (options_df.op_strike <= options_df.acao_vlr * (1+PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO))]
+        PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO = configs[
+            "PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO"
+        ]["value"]
+
+        df_cap_garantido_strikes = options_df[
+            (
+                options_df.op_strike
+                >= options_df.acao_vlr
+                - (options_df.acao_vlr * PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO)
+            )
+            & (
+                options_df.op_strike
+                <= options_df.acao_vlr * (1 + PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO)
+            )
+        ]
 
         pysqldf = lambda q: sqldf(q, globals())
         query = """
@@ -132,56 +154,81 @@ if deciders['CAPITAL_GARANTIDO_DECIDER']['value'] == True:
         df_cap_garantido = pysqldf(query)
         df_cap_garantido = capital_garantido(df_cap_garantido)
         dfs_to_report["## Capital Garantido"] = df_cap_garantido
-        logger.info('estratégia de capital garantido calculada com sucesso.')
-    except:
-        send_push_notification("Estratégia de opções", "Falha ao executar estratégia de capital garantido.")
-        raise Exception('Falha ao calcular estratégia de capital garantido.')
+        logger.info("estratégia de capital garantido calculada com sucesso.")
+    except Exception:
+        send_push_notification(
+            "Estratégia de opções", "Falha ao executar estratégia de capital garantido."
+        )
+        raise Exception("Falha ao calcular estratégia de capital garantido.")
 else:
-    logger.warning('Estratégia de capital garantido não será executada.')
+    logger.warning("Estratégia de capital garantido não será executada.")
 
 # lancamento coberto para acoes em custodia
-if deciders['LANC_COBERTO_ACOES_CARTEIRA']['value'] == True:
+if deciders["LANC_COBERTO_ACOES_CARTEIRA"]["value"] is True:
     try:
-        logger.info('Iniciando execução de estratégia de lançamento coberto de ações em custodia.')
+        logger.info(
+            "Iniciando execução de estratégia de lançamento coberto de ações em custodia."
+        )
         l_coberto_custodia = lancamento_coberto_acoes_em_custodia(options_df)
         dfs_to_report["## Lançamento Coberto de Ações em Custódia"] = l_coberto_custodia
-        logger.info('estratégia de lançamento coberto de ações em custódia calculada com sucesso.')
-    except:
-        send_push_notification("Estratégia de opções", "Falha ao executar estratégia de lancamento coberto para acoes em custodia.")
-        raise Exception('Falha ao calcular estratégia lancamento coberto para acoes em custodia.')
+        logger.info(
+            "estratégia de lançamento coberto de ações em custódia calculada com sucesso."
+        )
+    except Exception:
+        send_push_notification(
+            "Estratégia de opções",
+            "Falha ao executar estratégia de lancamento coberto para acoes em custodia.",
+        )
+        raise Exception(
+            "Falha ao calcular estratégia lancamento coberto para acoes em custodia."
+        )
 else:
-    logger.warning('Estratégia de lançamento coberto de ações em custódia não será executada.')
+    logger.warning(
+        "Estratégia de lançamento coberto de ações em custódia não será executada."
+    )
 
 # lancamento coberto estrategia OTM
-if deciders['LANC_COBERTO_OTM']['value'] == True:
+if deciders["LANC_COBERTO_OTM"]["value"] is True:
     try:
-        logger.info('Iniciando execução de estratégia de lançamento coberto OTM.')
+        logger.info("Iniciando execução de estratégia de lançamento coberto OTM.")
         l_coberto_OTM = lancamento_coberto_estrategia_OTM(options_df)
         dfs_to_report["## Lançamento Coberto (estratégia OTM)"] = l_coberto_OTM
-        logger.info('estratégia de lançamento coberto OTM calculada com sucesso.')
-    except:
-        send_push_notification("Estratégia de opções", "Falha ao executar estratégia de lancamento coberto OTM.")
-        raise Exception('Falha ao calcular estratégia lancamento coberto OTM.')
+        logger.info("estratégia de lançamento coberto OTM calculada com sucesso.")
+    except Exception:
+        send_push_notification(
+            "Estratégia de opções",
+            "Falha ao executar estratégia de lancamento coberto OTM.",
+        )
+        raise Exception("Falha ao calcular estratégia lancamento coberto OTM.")
 else:
-    logger.warning('Estratégia de lançamento coberto OTM não será executada.')
+    logger.warning("Estratégia de lançamento coberto OTM não será executada.")
 
 # lancamento coberto custo final
-if deciders['LANC_COBERTO_CUSTO_FINAL']['value'] == True:
+if deciders["LANC_COBERTO_CUSTO_FINAL"]["value"] is True:
     try:
-        logger.info('Iniciando execução de estratégia de lançamento coberto baseada no custo final.')
+        logger.info(
+            "Iniciando execução de estratégia de lançamento coberto baseada no custo final."
+        )
         l_coberto_custo_final = lancamento_coberto_custo_final(options_df)
         dfs_to_report["## Lançamento Coberto (custo final)"] = l_coberto_custo_final
-        logger.info('estratégia de lançamento coberto (custo final) calculada com sucesso.')
-    except:
-        send_push_notification("Estratégia de opções", "Falha ao executar estratégia de lancamento coberto (custo final).")
-        raise Exception('Falha ao calcular estratégia lancamento coberto (custo final).')
+        logger.info(
+            "estratégia de lançamento coberto (custo final) calculada com sucesso."
+        )
+    except Exception:
+        send_push_notification(
+            "Estratégia de opções",
+            "Falha ao executar estratégia de lancamento coberto (custo final).",
+        )
+        raise Exception(
+            "Falha ao calcular estratégia lancamento coberto (custo final)."
+        )
 else:
-    logger.warning('Estratégia de lançamento coberto (custo final) não será executada.')
+    logger.warning("Estratégia de lançamento coberto (custo final) não será executada.")
 
 ###
 # REPORT
 ###
-push_df_to_datapane_reports(dfs_to_report, 'Estrategias de Opções')
+push_df_to_datapane_reports(dfs_to_report, "Estrategias de Opções")
 
 ###
 # NOTIFICATIONS
@@ -189,8 +236,8 @@ push_df_to_datapane_reports(dfs_to_report, 'Estrategias de Opções')
 title = "Estratégia de opções"
 message = "Estratégias de Opções Executada com sucesso! https://datapane.com/reports/E7ywxlA/estrategias-de-op%C3%A7%C3%B5es/"
 
-if deciders['SEND_PUSH_NOTIFICATION']['value'] == True:
+if deciders["SEND_PUSH_NOTIFICATION"]["value"] is True:
     send_push_notification(title, message)
 
-if deciders['SEND_TELEGRAM_NOTIFICATION']['value'] == True:
+if deciders["SEND_TELEGRAM_NOTIFICATION"]["value"] is True:
     send_telegram_message(message)
