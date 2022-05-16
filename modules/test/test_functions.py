@@ -5,9 +5,7 @@ import inspect
 import datetime
 from datetime import date
 import dateutil
-from modules.utils import get_airtable_data
 from modules.utils import get_options_data, custom_logger
-from modules.venda_put_seco import venda_put_a_seco
 
 logger = custom_logger()
 logger.info("Inicio do processamento de TESTE.")
