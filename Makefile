@@ -1,7 +1,3 @@
-# runs the entire processing pipeline
-pipeline_run:
-	python ./modules/main.py
-
 # creates a docker container based on the image/docker file - for development purposes
 container:
 	docker run -it -v ${PWD}:/home/ flvbssln/roe_deepnote:v1 /bin/bash
@@ -9,6 +5,15 @@ container:
 # install requirements - if needed
 requirements:
 	pip install -r requirements.txt
+	pip install -e.
+
+# runs the entire processing pipeline
+pipeline_run:
+	python ./modules/main.py
+
+# runs tests
+test:
+	python3 ./modules/test/test_functions.py
 
 # cleans execution/ compiled files
 clean:

@@ -1,7 +1,7 @@
 """
 Module with functions to compute the strategy
 """
-from utils import stock_price_probability_given_distribution, get_airtable_data
+from modules.utils import stock_price_probability_given_distribution, get_airtable_data
 from datetime import date
 
 today = date.today().strftime("%Y/%m/%d")
