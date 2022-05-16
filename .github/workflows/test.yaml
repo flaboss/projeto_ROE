@@ -11,7 +11,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: run tests
-      run:
+      run: |
+        make requirements
         make test
     - name: Dockerhub login
       env:
