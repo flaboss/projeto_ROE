@@ -20,17 +20,6 @@ future_date = (
 ).strftime("%Y-%m-%d")
 
 # test functions
-def test_airtable_retrieval():
-    '''
-    Function to test data retrieval from airtable.
-    '''
-    test_df = get_airtable_data("config")
-    try:
-        assert len(test_df) > 0
-        logger.info(f'Teste da função {inspect.stack()[0][3]} passou.')
-    except Exception:
-        logger.error(f'Teste da função {inspect.stack()[0][3]} falhou.')
-        
 def test_get_options_data():
     '''
     Function to test option data retrieval.
