@@ -190,7 +190,7 @@ title = "Estratégia de opções"
 message = "Estratégias de Opções Executada com sucesso! https://datapane.com/reports/E7ywxlA/estrategias-de-op%C3%A7%C3%B5es/"
 
 if deciders['SEND_PUSH_NOTIFICATION']['value'] == True:
-    send_push_notification("title", "message")
+    send_push_notification(title, message)
 
 if deciders['SEND_TELEGRAM_NOTIFICATION']['value'] == True:
-    send_telegram_message("message")
+    send_telegram_message(message)

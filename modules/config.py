@@ -1,2 +1,0 @@
-
-PERC_CUTOFF = 1.8
