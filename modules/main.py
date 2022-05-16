@@ -30,6 +30,8 @@ today = date.today().strftime("%Y/%m/%d")
 d_minus_1 = (dateutil.parser.parse(today) - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
 future_date = (dateutil.parser.parse(today) + datetime.timedelta(days=configs['NUM_MESES']['value']*30)).strftime('%Y-%m-%d')
 
+# data frames for datapane report
+dfs_to_report = {}
 
 ###
 # IMPORTING DATA
@@ -51,11 +53,12 @@ except:
 # STRATEGIES
 ###
 
-# venda de put
+# venda de put a seco
 if deciders['VENDA_PUT_DECIDER']['value'] == True:
     logger.info('Iniciando execução de estratégia de venda de put a seco.')
     try:
         v_put = venda_put_a_seco(options_df)
+        dfs_to_report["## Venda de put a seco"] = v_put
         logger.info('estratégia de venda de put a seco calculada com sucesso.')
     except:
         send_push_notification("Estratégia de opções", "Falha ao executar estratégia de venda de put")
@@ -86,7 +89,7 @@ if deciders['TRAVA_ALTA_PUT_DECIDER']['value'] == True:
 
     try:
         ta_put = trava_de_alta_com_put(self_join_df)
-        
+        dfs_to_report["## Trava de Alta com Put"] = ta_put
         logger.info('estratégia de trava de alta com put calculada com sucesso.')
     except:
         send_push_notification("Estratégia de opções", "Falha ao executar estratégia de trava de alta com put.")
@@ -128,7 +131,7 @@ if deciders['CAPITAL_GARANTIDO_DECIDER']['value'] == True:
 
         df_cap_garantido = pysqldf(query)
         df_cap_garantido = capital_garantido(df_cap_garantido)
-
+        dfs_to_report["## Capital Garantido"] = df_cap_garantido
         logger.info('estratégia de capital garantido calculada com sucesso.')
     except:
         send_push_notification("Estratégia de opções", "Falha ao executar estratégia de capital garantido.")
@@ -141,6 +144,7 @@ if deciders['LANC_COBERTO_ACOES_CARTEIRA']['value'] == True:
     try:
         logger.info('Iniciando execução de estratégia de lançamento coberto de ações em custodia.')
         l_coberto_custodia = lancamento_coberto_acoes_em_custodia(options_df)
+        dfs_to_report["## Lançamento Coberto de Ações em Custódia"] = l_coberto_custodia
         logger.info('estratégia de lançamento coberto de ações em custódia calculada com sucesso.')
     except:
         send_push_notification("Estratégia de opções", "Falha ao executar estratégia de lancamento coberto para acoes em custodia.")
@@ -153,6 +157,7 @@ if deciders['LANC_COBERTO_OTM']['value'] == True:
     try:
         logger.info('Iniciando execução de estratégia de lançamento coberto OTM.')
         l_coberto_OTM = lancamento_coberto_estrategia_OTM(options_df)
+        dfs_to_report["## Lançamento Coberto (estratégia OTM)"] = l_coberto_OTM
         logger.info('estratégia de lançamento coberto OTM calculada com sucesso.')
     except:
         send_push_notification("Estratégia de opções", "Falha ao executar estratégia de lancamento coberto OTM.")
@@ -165,6 +170,7 @@ if deciders['LANC_COBERTO_CUSTO_FINAL']['value'] == True:
     try:
         logger.info('Iniciando execução de estratégia de lançamento coberto baseada no custo final.')
         l_coberto_custo_final = lancamento_coberto_custo_final(options_df)
+        dfs_to_report["## Lançamento Coberto (custo final)"] = l_coberto_custo_final
         logger.info('estratégia de lançamento coberto (custo final) calculada com sucesso.')
     except:
         send_push_notification("Estratégia de opções", "Falha ao executar estratégia de lancamento coberto (custo final).")
@@ -175,10 +181,16 @@ else:
 ###
 # REPORT
 ###
-#push_df_to_datapane_reports(v_put, 'Estrategias de Opções')
+push_df_to_datapane_reports(dfs_to_report, 'Estrategias de Opções')
 
 ###
 # NOTIFICATIONS
 ###
-# send_push_notification("title", "message")
-# send_telegram_message("test message")
+title = "Estratégia de opções"
+message = "Estratégias de Opções Executada com sucesso! https://datapane.com/reports/E7ywxlA/estrategias-de-op%C3%A7%C3%B5es/"
+
+if deciders['SEND_PUSH_NOTIFICATION']['value'] == True:
+    send_push_notification("title", "message")
+
+if deciders['SEND_TELEGRAM_NOTIFICATION']['value'] == True:
+    send_telegram_message("message")

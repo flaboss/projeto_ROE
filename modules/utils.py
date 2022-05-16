@@ -147,10 +147,17 @@ def stock_price_probability_given_distribution(row):
 
     return prob_acima
 
-def push_df_to_datapane_reports(dataframes, report_name):
+def push_df_to_datapane_reports(dfs_to_report, report_name):
+    '''
+    Function to publish tables with strategies to the datapane reports
+    '''
     api_key = os.environ["DATAPANE_API_KEY"]
     os.system(f"datapane login --token '{api_key}'")
 
-    dp.Report(
-        dp.DataTable(dataframes)
-    ).upload(name=report_name)
+    report = []
+    for i in dfs_to_report.keys():
+        if len(dfs_to_report[i]) > 0:
+            report.append(i)
+            report.append(dp.DataTable(dfs_to_report[i]))
+
+    dp.Report(*report).upload(name=report_name)
