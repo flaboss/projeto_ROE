@@ -48,7 +48,7 @@ dfs_to_report = {}
 logger.info("Importando dados.")
 try:
     ticker_df = get_airtable_data('stocks_to_process')
-    ticker_list = ticker_df[ticker_df.process_options_strategy is True]['ticker'].to_list()
+    ticker_list = ticker_df[ticker_df.process_options_strategy == True]['ticker'].to_list()
     
     options_df = get_options_data(ticker_list, future_date)
     logger.info("Dados importados com sucesso.")
@@ -228,11 +228,13 @@ else:
 ###
 # REPORT
 ###
+
 push_df_to_datapane_reports(dfs_to_report, "Estrategias de Opções")
 
 ###
 # NOTIFICATIONS
 ###
+
 title = "Estratégia de opções"
 message = "Estratégias de Opções Executada com sucesso! https://datapane.com/reports/E7ywxlA/estrategias-de-op%C3%A7%C3%B5es/"
 
