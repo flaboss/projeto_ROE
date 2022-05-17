@@ -6,3 +6,4 @@ eggs/
 *.egg-info/
 .installed.cfg
 *.egg
+tree.txt
