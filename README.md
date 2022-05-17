@@ -11,17 +11,17 @@ Serviços utilizados:
 ├── Makefile <br>
 ├── README.md <br>
 ├── __init__.py <br>
-├── modules <br>
-│   ├── __init__.py <br>
-│   ├── capital_garantido.py <br>
-│   ├── lancamento_coberto.py <br>
-│   ├── main.py <br>
-│   ├── test <br>
-│   │   ├── __init__.py <br>
-│   │   └── test_functions.py <br>
-│   ├── trava_alta_put.py <br>
-│   ├── utils.py <br>
-│   └── venda_put_seco.py <br>
+├── modules <br> 
+│   ├── __init__.py <br> 
+│   ├── capital_garantido.py <br> 
+│   ├── lancamento_coberto.py <br> 
+│   ├── main.py <br> 
+│   ├── test <br> 
+│   │   ├── __init__.py <br> 
+│   │   └── test_functions.py <br> 
+│   ├── trava_alta_put.py <br> 
+│   ├── utils.py <br> 
+│   └── venda_put_seco.py <br> 
 ├── requirements.txt <br>
 ├── setup.py <br>
 └── tree.txt <br>
