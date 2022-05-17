@@ -3,4 +3,6 @@
 # projeto_ROE
 Este projeto executa recomendação de operações estruturadas com ações e opções da BMF BOVESPA.
 Serviços utilizados:
-[https://user-images.githubusercontent.com/8702703/168902966-c5087c6a-a394-4796-b038-a4ec5eafa453.png]
+![services](https://user-images.githubusercontent.com/8702703/168903597-d864a65e-f9b9-46c5-b5f9-72b27a14c734.png)
+
+![structure](https://user-images.githubusercontent.com/8702703/168903745-f0f289dc-c39a-448c-ad53-2d1da65c2102.png)
