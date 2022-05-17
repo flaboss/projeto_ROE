@@ -7,21 +7,21 @@ Serviços utilizados:
 
 ![structure](https://user-images.githubusercontent.com/8702703/168903745-f0f289dc-c39a-448c-ad53-2d1da65c2102.png)
 
-├── Dockerfile
-├── Makefile
-├── README.md
-├── __init__.py
-├── modules
-│   ├── __init__.py
-│   ├── capital_garantido.py
-│   ├── lancamento_coberto.py
-│   ├── main.py
-│   ├── test
-│   │   ├── __init__.py
-│   │   └── test_functions.py
-│   ├── trava_alta_put.py
-│   ├── utils.py
-│   └── venda_put_seco.py
-├── requirements.txt
-├── setup.py
-└── tree.txt
+├── Dockerfile <br>
+├── Makefile <br>
+├── README.md <br>
+├── __init__.py <br>
+├── modules <br>
+│   ├── __init__.py <br>
+│   ├── capital_garantido.py <br>
+│   ├── lancamento_coberto.py <br>
+│   ├── main.py <br>
+│   ├── test <br>
+│   │   ├── __init__.py <br>
+│   │   └── test_functions.py <br>
+│   ├── trava_alta_put.py <br>
+│   ├── utils.py <br>
+│   └── venda_put_seco.py <br>
+├── requirements.txt <br>
+├── setup.py <br>
+└── tree.txt <br>
