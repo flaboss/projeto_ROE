@@ -214,7 +214,8 @@ def push_df_to_datapane_reports(dfs_to_report, report_name):
 
 def upload_data_bitdotio(df, table_name, recommendation_dt, days_to_keep):
     '''
-    
+    Function to clear past recommendation given a threshold & load new data
+    into tables hosted in bit.io.
     '''
     logger = custom_logger()
     
@@ -229,12 +230,12 @@ def upload_data_bitdotio(df, table_name, recommendation_dt, days_to_keep):
     try:
         with engine.connect() as conn:
             conn.execute(f"""delete from "{bitdotio_username}/roe_project"."{table_name}" 
-                            where date(recommendation_dt) <= date{recommendation_dt} 
+                            where date(recommendation_dt) <= date('{recommendation_dt}') 
                                 - integer '{days_to_keep}';""")
-        
+    
         logger.info(f"Dados com mais de {days_to_keep} dias excluidos da tabela {table_name}.")
     except:
-        logger.warning("Dados passados não excluidos.")
+        logger.warning(f"Dados passados da tabela {table_name} não excluidos.")
         pass
     
     try:
