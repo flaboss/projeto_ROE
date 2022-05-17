@@ -11,3 +11,4 @@ python-dotenv==0.20.0
 scipy==1.7.3
 SQLAlchemy==1.4.36
 yfinance==0.1.70
+psycopg2-binary==2.8.6
