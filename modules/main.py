@@ -3,7 +3,7 @@ Main module to run the entire pipeline
 """
 
 from utils import get_airtable_data, send_push_notification, send_telegram_message
-from utils import get_options_data, custom_logger, push_df_to_datapane_reports
+from utils import get_options_data, custom_logger, push_df_to_datapane_reports, upload_data_bitdotio
 import datetime
 from datetime import date
 import dateutil
@@ -41,6 +41,9 @@ future_date = (
 # data frames for datapane report
 dfs_to_report = {}
 
+# qty of days to keep in bit.io
+qty_days_to_keep = configs["QT_DAYS_KEEP_DATA"]["value"]
+
 ###
 # IMPORTING DATA
 ###
@@ -66,6 +69,8 @@ if deciders["VENDA_PUT_DECIDER"]["value"] is True:
     try:
         v_put = venda_put_a_seco(options_df)
         dfs_to_report["## Venda de put a seco"] = v_put
+        upload_data_bitdotio(v_put, 'estr_venda_put_seco', today, qty_days_to_keep)
+
         logger.info("estratégia de venda de put a seco calculada com sucesso.")
     except Exception:
         send_push_notification(
@@ -99,6 +104,8 @@ if deciders["TRAVA_ALTA_PUT_DECIDER"]["value"] is True:
     try:
         ta_put = trava_de_alta_com_put(self_join_df)
         dfs_to_report["## Trava de Alta com Put"] = ta_put
+        upload_data_bitdotio(ta_put, 'estr_trava_alta_put', today, qty_days_to_keep)
+
         logger.info("estratégia de trava de alta com put calculada com sucesso.")
     except Exception:
         send_push_notification(
@@ -154,6 +161,8 @@ if deciders["CAPITAL_GARANTIDO_DECIDER"]["value"] is True:
         df_cap_garantido = pysqldf(query)
         df_cap_garantido = capital_garantido(df_cap_garantido)
         dfs_to_report["## Capital Garantido"] = df_cap_garantido
+        upload_data_bitdotio(df_cap_garantido, 'estr_capital_garantido', today, qty_days_to_keep)
+
         logger.info("estratégia de capital garantido calculada com sucesso.")
     except Exception:
         send_push_notification(
@@ -171,6 +180,8 @@ if deciders["LANC_COBERTO_ACOES_CARTEIRA"]["value"] is True:
         )
         l_coberto_custodia = lancamento_coberto_acoes_em_custodia(options_df)
         dfs_to_report["## Lançamento Coberto de Ações em Custódia"] = l_coberto_custodia
+        upload_data_bitdotio(l_coberto_custodia, 'estr_lancamento_coberto_custodia', today, qty_days_to_keep)
+
         logger.info(
             "estratégia de lançamento coberto de ações em custódia calculada com sucesso."
         )
@@ -193,6 +204,8 @@ if deciders["LANC_COBERTO_OTM"]["value"] is True:
         logger.info("Iniciando execução de estratégia de lançamento coberto OTM.")
         l_coberto_OTM = lancamento_coberto_estrategia_OTM(options_df)
         dfs_to_report["## Lançamento Coberto (estratégia OTM)"] = l_coberto_OTM
+        upload_data_bitdotio(l_coberto_OTM, 'estr_lancamento_coberto_otm', today, qty_days_to_keep)
+
         logger.info("estratégia de lançamento coberto OTM calculada com sucesso.")
     except Exception:
         send_push_notification(
@@ -211,6 +224,8 @@ if deciders["LANC_COBERTO_CUSTO_FINAL"]["value"] is True:
         )
         l_coberto_custo_final = lancamento_coberto_custo_final(options_df)
         dfs_to_report["## Lançamento Coberto (custo final)"] = l_coberto_custo_final
+        upload_data_bitdotio(l_coberto_custo_final, 'estr_lancamento_coberto_custo_final', today, qty_days_to_keep)
+
         logger.info(
             "estratégia de lançamento coberto (custo final) calculada com sucesso."
         )
