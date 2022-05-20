@@ -7,3 +7,4 @@ eggs/
 .installed.cfg
 *.egg
 tree.txt
+.vscode/
