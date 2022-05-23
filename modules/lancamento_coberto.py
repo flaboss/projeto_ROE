@@ -34,7 +34,7 @@ def lancamento_coberto_acoes_em_custodia(df):
         stock_current_price
     )
     l_coberto_carteira["retorno_total"] = (
-        l_coberto_carteira["op_vlr"] + l_coberto_carteira["op_strike"] - l_coberto_carteira["acao_pm"]
+        l_coberto_carteira["op_vlr"] + l_coberto_carteira["op_strike"]
     )
 
     l_coberto_carteira = l_coberto_carteira[
