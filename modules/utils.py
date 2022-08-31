@@ -219,6 +219,7 @@ def upload_data_bitdotio(df, table_name, recommendation_dt, days_to_keep):
     into tables hosted in bit.io.
     """
     logger = custom_logger()
+    days_to_keep = int(float(days_to_keep))
 
     df["recommendation_dt"] = recommendation_dt
 
