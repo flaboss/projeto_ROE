@@ -49,6 +49,15 @@ def get_airtable_data(table_name):
     return df
 
 
+def get_tickers_to_be_processed(strategy):
+    """
+    Returns the tickers to be processed according to the set up in airtable
+    The param strategy must be the airtable column name for the strategy
+    """
+    tickers_to_process = get_airtable_data("stocks_to_process")
+    return tickers_to_process[tickers_to_process[strategy]==True]['ticker'].to_list()
+
+
 def send_push_notification(title, message):
     """
     Function to send push notifications through pushbullet
