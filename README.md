@@ -1,6 +1,6 @@
 [![Master deploy](https://github.com/flaboss/projeto_ROE/actions/workflows/deploy.yaml/badge.svg?branch=main)](https://github.com/flaboss/projeto_ROE/actions/workflows/deploy.yaml)
 
-# Projeto ROE (Recomendação de Operações Estruturadas)
+# Projeto ROE (Radar de Operações Estruturadas)
 Este projeto conecta vários serviços *freemium* para montar um sistema de recomendação de operações estruturadas utilizando dados de ações e opções de ações da bolsa brasileira B3.
 
 O sistema utiliza *github actions* como esteira de deploy, onde cada pull request ou merge na branch master passa por testes automatizados. Se bem sucedido, uma imagem Docker é carregada no docker hub para ser utilizada na execução. A imagem já tem todas as bibliotecas necessárias pré instaladas, o que faz com que a execução seja mais rápida, pulando a etapa de instalação. O projeto é executado diariamente e envia notificações via push e via telegram - os meios que me convém para estar atento a boas operações que possam aparecer.
