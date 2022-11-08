@@ -273,8 +273,13 @@ else:
 ###
 # REPORT
 ###
-
-push_df_to_datapane_reports(dfs_to_report, "Estrategias de Opções")
+try:
+    push_df_to_datapane_reports(dfs_to_report, "Estrategias de Opções")
+except Exception:
+        send_push_notification(
+            "Estratégia de opções", "Falha ao gerar relatório no Datapane."
+        )
+        raise Exception("Falha ao gerar relatório no Datapane.")
 
 ###
 # NOTIFICATIONS
