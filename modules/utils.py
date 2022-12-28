@@ -6,12 +6,15 @@ import os
 import requests
 from pushbullet import Pushbullet
 from pandas_datareader import data as web
+import yfinance as yf
 from datetime import date
 import datetime
 from scipy.stats import norm
 import datapane as dp
 from sqlalchemy import create_engine
 
+# fix for pandas datareader to read Yahoo data
+yf.pdr_override()
 load_dotenv(".env")
 
 
@@ -139,6 +142,7 @@ def list_stock_options(ticker, future_dt):
 
 def get_options_data(ticker_list, future_dt):
     options = []
+    ticker_exceptions_message = ""
     logger = custom_logger()
 
     for ticker in ticker_list:
@@ -148,10 +152,13 @@ def get_options_data(ticker_list, future_dt):
             options_data["acao_vlr"] = stock_price
             options.append(options_data.values.tolist())
         except Exception:
-            send_telegram_message(f"Falha ao importar dados de {ticker}")
+            ticker_exceptions_message += f" {ticker},"
             logger.warning(f"Falha ao importar dados de {ticker}")
             pass
 
+    if ticker_exceptions_message != "":
+        send_telegram_message(f"Falha ao importar dados de {ticker_exceptions_message[:-1]}")
+    
     df_options = pd.concat(pd.DataFrame(i) for i in options)
     df_options.columns = [
         "acao",
