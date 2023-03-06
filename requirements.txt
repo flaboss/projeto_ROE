@@ -1,5 +1,5 @@
 black==22.3.0
-datapane==0.15.1
+datapane==0.16.1
 flake8==4.0.1
 pandas_datareader==0.10.0
 pandasql==0.7.3
