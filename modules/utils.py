@@ -223,10 +223,15 @@ def push_df_to_datapane_reports(dfs_to_report, report_name):
     report = []
     for i in dfs_to_report.keys():
         if len(dfs_to_report[i]) > 0:
-            report.append(i)
+            #report.append(i)
+            #report.append(dp.DataTable(dfs_to_report[i]))
+            #report.append(dp.Text(i))
+            report.append(dp.HTML(f'<h2>{i}</h2>'))
             report.append(dp.DataTable(dfs_to_report[i]))
 
-    dp.Report(*report).upload(name=report_name)
+    #dp.Report(*report).upload(name=report_name)
+    dp.upload_report(report, name=report_name)
+
 
 
 def upload_data_bitdotio(df, table_name, recommendation_dt, days_to_keep):

@@ -79,7 +79,7 @@ if deciders["VENDA_PUT_DECIDER"]["value"] is True:
     logger.info("Iniciando execução de estratégia de venda de put a seco.")
     try:
         v_put = venda_put_a_seco(options_df[options_df['acao'].isin(get_tickers_to_be_processed('process_v_put_seco'))])
-        dfs_to_report["## Venda de put a seco"] = v_put
+        dfs_to_report["Venda de put a seco"] = v_put
         upload_data_bitdotio(v_put, "estr_venda_put_seco", today, qty_days_to_keep)
 
         logger.info("estratégia de venda de put a seco calculada com sucesso.")
@@ -115,7 +115,7 @@ if deciders["TRAVA_ALTA_PUT_DECIDER"]["value"] is True:
     try:
         df_to_process = self_join_df[self_join_df['acao'].isin(get_tickers_to_be_processed('process_trava_alta_put'))]
         ta_put = trava_de_alta_com_put(df_to_process)
-        dfs_to_report["## Trava de Alta com Put"] = ta_put
+        dfs_to_report["Trava de Alta com Put"] = ta_put
         upload_data_bitdotio(ta_put, "estr_trava_alta_put", today, qty_days_to_keep)
 
         logger.info("estratégia de trava de alta com put calculada com sucesso.")
@@ -173,7 +173,7 @@ if deciders["CAPITAL_GARANTIDO_DECIDER"]["value"] is True:
         df_cap_garantido = pysqldf(query)
         df_to_process = df_cap_garantido[df_cap_garantido['acao'].isin(get_tickers_to_be_processed('process_capital_garantido'))]
         df_cap_garantido = capital_garantido(df_to_process)
-        dfs_to_report["## Capital Garantido"] = df_cap_garantido
+        dfs_to_report["Capital Garantido"] = df_cap_garantido
         upload_data_bitdotio(
             df_cap_garantido, "estr_capital_garantido", today, qty_days_to_keep
         )
@@ -195,7 +195,7 @@ if deciders["LANC_COBERTO_ACOES_CARTEIRA"]["value"] is True:
         )
         # acoes em custodia ja definidas na aba avg_cost do airtable
         l_coberto_custodia = lancamento_coberto_acoes_em_custodia(options_df)
-        dfs_to_report["## Lançamento Coberto de Ações em Custódia"] = l_coberto_custodia
+        dfs_to_report["Lançamento Coberto de Ações em Custódia"] = l_coberto_custodia
         upload_data_bitdotio(
             l_coberto_custodia,
             "estr_lancamento_coberto_custodia",
@@ -225,7 +225,7 @@ if deciders["LANC_COBERTO_OTM"]["value"] is True:
         logger.info("Iniciando execução de estratégia de lançamento coberto OTM.")
         df_to_process = options_df[options_df['acao'].isin(get_tickers_to_be_processed('process_l_coberto_otm'))]
         l_coberto_OTM = lancamento_coberto_estrategia_OTM(df_to_process)
-        dfs_to_report["## Lançamento Coberto (estratégia OTM)"] = l_coberto_OTM
+        dfs_to_report["Lançamento Coberto (estratégia OTM)"] = l_coberto_OTM
         upload_data_bitdotio(
             l_coberto_OTM, "estr_lancamento_coberto_otm", today, qty_days_to_keep
         )
@@ -248,7 +248,7 @@ if deciders["LANC_COBERTO_CUSTO_FINAL"]["value"] is True:
         )
         df_to_process = options_df[options_df['acao'].isin(get_tickers_to_be_processed('process_l_coberto_custo_final'))]
         l_coberto_custo_final = lancamento_coberto_custo_final(df_to_process)
-        dfs_to_report["## Lançamento Coberto (custo final)"] = l_coberto_custo_final
+        dfs_to_report["Lançamento Coberto (custo final)"] = l_coberto_custo_final
         upload_data_bitdotio(
             l_coberto_custo_final,
             "estr_lancamento_coberto_custo_final",
