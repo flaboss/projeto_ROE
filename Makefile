@@ -1,6 +1,6 @@
 # creates a docker container based on the image/docker file - for development purposes
 container:
-	docker run -it -v ${PWD}:/home/ flvbssln/roe_deepnote:v1 /bin/bash
+	docker run -it --rm -v ${PWD}:/home/ flvbssln/roe_deepnote:v1 /bin/bash
 
 # install requirements - if needed
 requirements:
