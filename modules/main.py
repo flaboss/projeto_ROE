@@ -94,10 +94,11 @@ if deciders["TRAVA_ALTA_PUT_DECIDER"]["value"] is True:
         v_put = venda_put_a_seco(options_df)
 
     # create a self joined table
-    pysqldf = lambda q: sqldf(q, globals())
+    pysqldf = lambda q: sqldf(q, globals())  # Noqa: E731
     query = """
-    select upper.acao, upper.acao_vlr, upper.op_venc, upper.opcao as upper_leg_opcao, upper.op_strike as upper_leg_strike, 
-        upper.op_vlr as upper_leg_vlr, lower.opcao as lower_leg_opcao, lower.op_strike as lower_leg_strike, 
+    select upper.acao, upper.acao_vlr, upper.op_venc, upper.opcao as upper_leg_opcao, 
+        upper.op_strike as upper_leg_strike, upper.op_vlr as upper_leg_vlr, 
+        lower.opcao as lower_leg_opcao, lower.op_strike as lower_leg_strike, 
         lower.op_vlr as lower_leg_vlr, upper.prob_acima as prob_sucesso
     from v_put upper
     inner join v_put lower
@@ -133,7 +134,7 @@ if deciders["CAPITAL_GARANTIDO_DECIDER"]["value"] is True:
             & (options_df.op_strike <= options_df.acao_vlr * (1 + PERC_STRIKE_DIF_PARA_CAPITAL_GARANTIDO))
         ]
 
-        pysqldf = lambda q: sqldf(q, globals())
+        pysqldf = lambda q: sqldf(q, globals())  # Noqa: E731
         query = """
         with put as (
             select *

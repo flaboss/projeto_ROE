@@ -61,7 +61,7 @@ def get_tickers_to_be_processed(strategy):
     The param strategy must be the airtable column name for the strategy
     """
     tickers_to_process = get_airtable_data("stocks_to_process")
-    return tickers_to_process[tickers_to_process[strategy] == True]['ticker'].to_list()
+    return tickers_to_process[tickers_to_process[strategy] == True]['ticker'].to_list()  # Noqa: E712
 
 
 def send_push_notification(title, message):
@@ -102,7 +102,8 @@ def list_stock_options_by_exp_date(ticker, exp_date):
     """
     Lists all stock options given an expiration date
     """
-    url = f"https://opcoes.net.br/listaopcoes/completa?idAcao={ticker}&listarVencimentos=False&cotacoes=true&vencimentos={exp_date}"
+    url = f"https://opcoes.net.br/listaopcoes/completa?idAcao={ticker}&"
+    "listarVencimentos=False&cotacoes=true&vencimentos={exp_date}"
     r = requests.get(url).json()
     data = [[ticker, exp_date, i[0].split("_")[0], i[2], i[3], i[5], i[8], i[9]] for i in r["data"]["cotacoesOpcoes"]]
     return pd.DataFrame(
@@ -225,7 +226,7 @@ def upload_data_bitdotio(df, table_name, recommendation_dt, days_to_keep):
             )
 
         logger.info(f"Dados com mais de {days_to_keep} dias excluidos da tabela {table_name}.")
-    except:
+    except Exception:
         logger.warning(f"Dados passados da tabela {table_name} não excluidos.")
         pass
 
@@ -238,7 +239,7 @@ def upload_data_bitdotio(df, table_name, recommendation_dt, days_to_keep):
             )
 
         logger.info(f"Dados de recomendações de hoje serão substituidos da tabela {table_name}.")
-    except:
+    except Exception:
         pass
 
     try:
