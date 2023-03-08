@@ -5,7 +5,6 @@ container:
 # install requirements - if needed
 requirements:
 	pip install -r requirements.txt
-	pip install -e.
 
 # runs the entire processing pipeline
 pipeline_run:
@@ -22,6 +21,7 @@ clean:
 
 # formats using black
 format:
+	isort modules
 	black modules
 
 # lints using flake8

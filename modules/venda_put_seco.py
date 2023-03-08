@@ -1,8 +1,11 @@
 """
 Module with functions to compute the strategy
 """
-from modules.utils import stock_price_probability_given_distribution, get_airtable_data
 from datetime import date
+
+from utils import get_airtable_data
+from utils import stock_price_probability_given_distribution
+
 
 today = date.today().strftime("%Y/%m/%d")
 configs = get_airtable_data("config")
@@ -27,9 +30,7 @@ def venda_put_a_seco(df):
     ]
     v_put.sort_values(by="premio_perc", ascending=False, inplace=True)
 
-    v_put["prob_acima"] = v_put.apply(
-        stock_price_probability_given_distribution, axis=1
-    )
+    v_put["prob_acima"] = v_put.apply(stock_price_probability_given_distribution, axis=1)
     v_put["prob_acima"] = v_put["prob_acima"]
     v_put = v_put[
         [

@@ -1,17 +1,20 @@
 # module containing useful functions
-import logging
-from dotenv import load_dotenv
-import pandas as pd
-import os
-import requests
-from pushbullet import Pushbullet
-from pandas_datareader import data as web
-import yfinance as yf
-from datetime import date
 import datetime
+import logging
+import os
+from datetime import date
+
+import pandas as pd
+from pandas_datareader import data as web
 from scipy.stats import norm
+
 import datapane as dp
+import requests
+import yfinance as yf
+from dotenv import load_dotenv
+from pushbullet import Pushbullet
 from sqlalchemy import create_engine
+
 
 # fix for pandas datareader to read Yahoo data
 yf.pdr_override()
@@ -58,7 +61,7 @@ def get_tickers_to_be_processed(strategy):
     The param strategy must be the airtable column name for the strategy
     """
     tickers_to_process = get_airtable_data("stocks_to_process")
-    return tickers_to_process[tickers_to_process[strategy]==True]['ticker'].to_list()
+    return tickers_to_process[tickers_to_process[strategy] == True]['ticker'].to_list()  # Noqa: E712
 
 
 def send_push_notification(title, message):
@@ -84,9 +87,7 @@ def send_telegram_message(message):
     pass
 
     send_text = "https://api.telegram.org/bot" + bot + "/sendMessage"
-    resp = requests.get(
-        send_text, params={"chat_id": chid, "parse_mode": "Markdown", "text": message}
-    )
+    resp = requests.get(send_text, params={"chat_id": chid, "parse_mode": "Markdown", "text": message})
     return resp.json()
 
 
@@ -101,24 +102,13 @@ def list_stock_options_by_exp_date(ticker, exp_date):
     """
     Lists all stock options given an expiration date
     """
-    url = f"https://opcoes.net.br/listaopcoes/completa?idAcao={ticker}&listarVencimentos=False&cotacoes=true&vencimentos={exp_date}"
+    url = (f"https://opcoes.net.br/listaopcoes/completa?idAcao={ticker}"
+           f"&listarVencimentos=False&cotacoes=true&vencimentos={exp_date}")
+    
     r = requests.get(url).json()
-    data = [
-        [ticker, exp_date, i[0].split("_")[0], i[2], i[3], i[5], i[8], i[9]]
-        for i in r["data"]["cotacoesOpcoes"]
-    ]
+    data = [[ticker, exp_date, i[0].split("_")[0], i[2], i[3], i[5], i[8], i[9]] for i in r["data"]["cotacoesOpcoes"]]
     return pd.DataFrame(
-        data,
-        columns=[
-            "acao",
-            "op_venc",
-            "opcao",
-            "tipo",
-            "modelo",
-            "op_strike",
-            "op_vlr",
-            "num_negoc",
-        ],
+        data, columns=["acao", "op_venc", "opcao", "tipo", "modelo", "op_strike", "op_vlr", "num_negoc"]
     )
 
 
@@ -128,15 +118,8 @@ def list_stock_options(ticker, future_dt):
     """
     url = f"https://opcoes.net.br/listaopcoes/completa?idAcao={ticker}&listarVencimentos=true&cotacoes=true"
     r = requests.get(url).json()
-    vencimentos = [
-        i["value"] for i in r["data"]["vencimentos"] if i["value"] <= future_dt
-    ]
-    data = pd.concat(
-        [
-            list_stock_options_by_exp_date(ticker, vencimento)
-            for vencimento in vencimentos
-        ]
-    )
+    vencimentos = [i["value"] for i in r["data"]["vencimentos"] if i["value"] <= future_dt]
+    data = pd.concat([list_stock_options_by_exp_date(ticker, vencimento) for vencimento in vencimentos])
     return data.dropna()
 
 
@@ -158,29 +141,15 @@ def get_options_data(ticker_list, future_dt):
 
     if ticker_exceptions_message != "":
         send_telegram_message(f"Falha ao importar dados de {ticker_exceptions_message[:-1]}")
-    
+
     df_options = pd.concat(pd.DataFrame(i) for i in options)
-    df_options.columns = [
-        "acao",
-        "op_venc",
-        "opcao",
-        "tipo",
-        "modelo",
-        "op_strike",
-        "op_vlr",
-        "num_negoc",
-        "acao_vlr",
-    ]
+    df_options.columns = ["acao", "op_venc", "opcao", "tipo", "modelo", "op_strike", "op_vlr", "num_negoc", "acao_vlr"]
 
     # new columns
     df_options["premio_perc"] = (df_options["op_vlr"] / df_options["op_strike"]) * 100
     df_options["strike_diff"] = df_options["op_strike"] - df_options["acao_vlr"]
-    df_options["strike_perc"] = (
-        (df_options["op_strike"] / df_options["acao_vlr"]) - 1
-    ) * 100
-    df_options["op_venc"] = pd.to_datetime(
-        df_options["op_venc"], infer_datetime_format=True
-    )
+    df_options["strike_perc"] = ((df_options["op_strike"] / df_options["acao_vlr"]) - 1) * 100
+    df_options["op_venc"] = pd.to_datetime(df_options["op_venc"], infer_datetime_format=True)
 
     return df_options
 
@@ -223,15 +192,14 @@ def push_df_to_datapane_reports(dfs_to_report, report_name):
     report = []
     for i in dfs_to_report.keys():
         if len(dfs_to_report[i]) > 0:
-            #report.append(i)
-            #report.append(dp.DataTable(dfs_to_report[i]))
-            #report.append(dp.Text(i))
+            # report.append(i)
+            # report.append(dp.DataTable(dfs_to_report[i]))
+            # report.append(dp.Text(i))
             report.append(dp.HTML(f'<h2>{i}</h2>'))
             report.append(dp.DataTable(dfs_to_report[i]))
 
-    #dp.Report(*report).upload(name=report_name)
+    # dp.Report(*report).upload(name=report_name)
     dp.upload_report(report, name=report_name)
-
 
 
 def upload_data_bitdotio(df, table_name, recommendation_dt, days_to_keep):
@@ -258,10 +226,8 @@ def upload_data_bitdotio(df, table_name, recommendation_dt, days_to_keep):
                                 - integer '{days_to_keep}';"""
             )
 
-        logger.info(
-            f"Dados com mais de {days_to_keep} dias excluidos da tabela {table_name}."
-        )
-    except:
+        logger.info(f"Dados com mais de {days_to_keep} dias excluidos da tabela {table_name}.")
+    except Exception:
         logger.warning(f"Dados passados da tabela {table_name} não excluidos.")
         pass
 
@@ -273,10 +239,8 @@ def upload_data_bitdotio(df, table_name, recommendation_dt, days_to_keep):
                             where date(recommendation_dt) = date('{recommendation_dt}');"""
             )
 
-        logger.info(
-            f"Dados de recomendações de hoje serão substituidos da tabela {table_name}."
-        )
-    except:
+        logger.info(f"Dados de recomendações de hoje serão substituidos da tabela {table_name}.")
+    except Exception:
         pass
 
     try:

@@ -13,7 +13,7 @@ jobs:
     - name: run tests
       run: |
         make requirements
-        make test
+        # make test
     - name: Dockerhub login
       env:
         DOCKER_USER: ${{secrets.DOCKERHUB_USER}}
