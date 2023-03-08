@@ -1,11 +1,15 @@
 """
 Script to test developed functions for CICD purposes
 """
-import inspect
 import datetime
+import inspect
 from datetime import date
+
+from modules.utils import custom_logger
+from modules.utils import get_options_data
+
 import dateutil
-from modules.utils import get_options_data, custom_logger
+
 
 logger = custom_logger()
 logger.info("Inicio do processamento de TESTE.")

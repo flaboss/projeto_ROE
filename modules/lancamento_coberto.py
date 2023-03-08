@@ -2,7 +2,10 @@
 Module with functions to compute the strategy
 """
 from datetime import date
-from utils import get_airtable_data, get_stock_price
+
+from utils import get_airtable_data
+from utils import get_stock_price
+
 
 today = date.today().strftime("%Y/%m/%d")
 

@@ -1,17 +1,20 @@
 # module containing useful functions
-import logging
-from dotenv import load_dotenv
-import pandas as pd
-import os
-import requests
-from pushbullet import Pushbullet
-from pandas_datareader import data as web
-import yfinance as yf
-from datetime import date
 import datetime
+import logging
+import os
+from datetime import date
+
+import pandas as pd
+from pandas_datareader import data as web
 from scipy.stats import norm
+
 import datapane as dp
+import requests
+import yfinance as yf
+from dotenv import load_dotenv
+from pushbullet import Pushbullet
 from sqlalchemy import create_engine
+
 
 # fix for pandas datareader to read Yahoo data
 yf.pdr_override()

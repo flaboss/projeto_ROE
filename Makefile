@@ -22,6 +22,7 @@ clean:
 
 # formats using black
 format:
+	isort modules
 	black modules
 
 # lints using flake8

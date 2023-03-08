@@ -2,26 +2,26 @@
 Main module to run the entire pipeline
 """
 
-from utils import get_airtable_data, send_push_notification, send_telegram_message
-from utils import (
-    get_options_data,
-    custom_logger,
-    push_df_to_datapane_reports,
-    upload_data_bitdotio,
-    get_tickers_to_be_processed
-)
 import datetime
 from datetime import date
+
 import dateutil
-from pandasql import sqldf
-from venda_put_seco import venda_put_a_seco
-from trava_alta_put import trava_de_alta_com_put
 from capital_garantido import capital_garantido
-from lancamento_coberto import (
-    lancamento_coberto_acoes_em_custodia,
-    lancamento_coberto_estrategia_OTM,
-)
+from lancamento_coberto import lancamento_coberto_acoes_em_custodia
 from lancamento_coberto import lancamento_coberto_custo_final
+from lancamento_coberto import lancamento_coberto_estrategia_OTM
+from pandasql import sqldf
+from trava_alta_put import trava_de_alta_com_put
+from utils import custom_logger
+from utils import get_airtable_data
+from utils import get_options_data
+from utils import get_tickers_to_be_processed
+from utils import push_df_to_datapane_reports
+from utils import send_push_notification
+from utils import send_telegram_message
+from utils import upload_data_bitdotio
+from venda_put_seco import venda_put_a_seco
+
 
 logger = custom_logger()
 logger.info("Inicio do processamento.")
