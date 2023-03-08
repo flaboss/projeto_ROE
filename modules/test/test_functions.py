@@ -16,9 +16,8 @@ logger.info("Inicio do processamento de TESTE.")
 
 # dates
 today = date.today().strftime("%Y/%m/%d")
-future_date = (dateutil.parser.parse(today) + datetime.timedelta(days=2 * 30)).strftime(
-    "%Y-%m-%d"
-)
+future_date = (dateutil.parser.parse(today) + datetime.timedelta(days=2 * 30)).strftime("%Y-%m-%d")
+
 
 # test functions
 def test_get_options_data():
