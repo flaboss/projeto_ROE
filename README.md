@@ -1,5 +1,7 @@
 [![Master deploy](https://github.com/flaboss/projeto_ROE/actions/workflows/deploy.yaml/badge.svg?branch=main)](https://github.com/flaboss/projeto_ROE/actions/workflows/deploy.yaml)
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/e9a713886b45ed45962d/maintainability)](https://codeclimate.com/github/flaboss/projeto_ROE/maintainability)
+
 # Projeto ROE (Radar de Operações Estruturadas)
 Este projeto conecta vários serviços *freemium* para montar um sistema de recomendação de operações estruturadas utilizando dados de ações e opções de ações da bolsa brasileira B3.
 
