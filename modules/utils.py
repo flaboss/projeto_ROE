@@ -102,7 +102,9 @@ def list_stock_options_by_exp_date(ticker, exp_date):
     """
     Lists all stock options given an expiration date
     """
-    url = f"https://opcoes.net.br/listaopcoes/completa?idAcao={ticker}&listarVencimentos=False&cotacoes=true&vencimentos={exp_date}"
+    url = (f"https://opcoes.net.br/listaopcoes/completa?idAcao={ticker}"
+           f"&listarVencimentos=False&cotacoes=true&vencimentos={exp_date}")
+    
     r = requests.get(url).json()
     data = [[ticker, exp_date, i[0].split("_")[0], i[2], i[3], i[5], i[8], i[9]] for i in r["data"]["cotacoesOpcoes"]]
     return pd.DataFrame(
