@@ -1,7 +1,7 @@
-"""
-Module with functions to compute the strategy
-"""
+""" Module with functions to compute the strategy """
 from datetime import date
+
+import pandas as pd
 
 from utils import get_airtable_data
 from utils import stock_price_probability_given_distribution
@@ -12,7 +12,7 @@ configs = get_airtable_data("config")
 configs = configs.set_index("key").T.to_dict()
 
 
-def venda_put_a_seco(df):
+def venda_put_a_seco(df: pd.DataFrame) -> pd.DataFrame:
     """
     Function to compute strategy of selling puts
     """

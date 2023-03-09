@@ -1,13 +1,9 @@
-"""
-Module with functions to compute the strategy
-"""
+""" Module with functions to compute the strategy """
 import pandas as pd
 
 
-def capital_garantido(df_cap_garantido):
-    """
-    Funtion for computing strategy capital garantido
-    """
+def capital_garantido(df_cap_garantido: pd.DataFrame) -> pd.DataFrame:
+    """Funtion for computing strategy capital garantido"""
     df_cap_garantido["op_venc"] = pd.to_datetime(df_cap_garantido["op_venc"], infer_datetime_format=True)
     df_cap_garantido["credito_operacao"] = df_cap_garantido.call_premio - df_cap_garantido.put_premio
     df_cap_garantido["lucro_max"] = (
