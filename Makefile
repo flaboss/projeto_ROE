@@ -12,7 +12,7 @@ pipeline_run:
 
 # runs tests
 test:
-	python3 ./modules/test/test_functions.py
+	python ./modules/test_functions.py
 
 # cleans execution/ compiled files
 clean:
