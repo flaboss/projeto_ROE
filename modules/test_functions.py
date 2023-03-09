@@ -5,8 +5,8 @@ import datetime
 import inspect
 from datetime import date
 
-from modules.utils import custom_logger
-from modules.utils import get_options_data
+from utils import custom_logger
+from utils import get_options_data
 
 import dateutil
 
