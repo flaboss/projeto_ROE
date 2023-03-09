@@ -1,14 +1,11 @@
-"""
-Script to test developed functions for CICD purposes
-"""
+""" Script to test developed functions for CICD purposes """
 import datetime
 import inspect
 from datetime import date
 
+import dateutil
 from utils import custom_logger
 from utils import get_options_data
-
-import dateutil
 
 
 logger = custom_logger()

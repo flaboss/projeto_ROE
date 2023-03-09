@@ -1,8 +1,10 @@
-# module containing useful functions
+""" module containing useful functions """
 import datetime
 import logging
 import os
 from datetime import date
+from typing import List
+from typing import NoReturn
 
 import pandas as pd
 from pandas_datareader import data as web
@@ -21,19 +23,15 @@ yf.pdr_override()
 load_dotenv(".env")
 
 
-def custom_logger():
-    """
-    Custom logging function
-    """
+def custom_logger() -> logging.getLogger:
+    """Custom logging function"""
     LOG_FORMAT = "[%(asctime)s] %(levelname)s - %(message)s"
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
     return logging.getLogger()
 
 
-def get_airtable_data(table_name):
-    """
-    Function to load managed data from airtable
-    """
+def get_airtable_data(table_name: str) -> pd.DataFrame:
+    """Function to load managed data from airtable"""
     api_key = os.environ["AIRTABLE_API_KEY"]
     base_id = os.environ["AIRTABLE_BASE_ID"]
     url = "https://api.airtable.com/v0/" + base_id + "/" + table_name
@@ -55,7 +53,7 @@ def get_airtable_data(table_name):
     return df
 
 
-def get_tickers_to_be_processed(strategy):
+def get_tickers_to_be_processed(strategy: str) -> list:
     """
     Returns the tickers to be processed according to the set up in airtable
     The param strategy must be the airtable column name for the strategy
@@ -64,20 +62,15 @@ def get_tickers_to_be_processed(strategy):
     return tickers_to_process[tickers_to_process[strategy] == True]['ticker'].to_list()  # Noqa: E712
 
 
-def send_push_notification(title, message):
-    """
-    Function to send push notifications through pushbullet
-    """
+def send_push_notification(title: str, message: str) -> NoReturn:
+    """Function to send push notifications through pushbullet"""
     api_key = os.environ["PUSHBULLET_API_KEY"]
     pb = Pushbullet(api_key)
-    push = pb.push_note(title, message)
-    return push
+    pb.push_note(title, message)
 
 
-def send_telegram_message(message):
-    """
-    Function to send automatic messages to a telegram channel
-    """
+def send_telegram_message(message: str) -> NoReturn:
+    """Function to send automatic messages to a telegram channel"""
     bot = os.environ["TELEGRAM_BOT"]
     resp = requests.get(f"https://api.telegram.org/bot{bot}/getUpdates").json()
     try:
@@ -88,23 +81,20 @@ def send_telegram_message(message):
 
     send_text = "https://api.telegram.org/bot" + bot + "/sendMessage"
     resp = requests.get(send_text, params={"chat_id": chid, "parse_mode": "Markdown", "text": message})
-    return resp.json()
 
 
-def get_stock_price(ticker):
-    """
-    Function to fetch stock last price from yahoo finance
-    """
+def get_stock_price(ticker: str) -> float:
+    """Function to fetch stock last price from yahoo finance"""
     return web.get_data_yahoo(f"{ticker}.sa")[-1:].Close[0]
 
 
-def list_stock_options_by_exp_date(ticker, exp_date):
-    """
-    Lists all stock options given an expiration date
-    """
-    url = (f"https://opcoes.net.br/listaopcoes/completa?idAcao={ticker}"
-           f"&listarVencimentos=False&cotacoes=true&vencimentos={exp_date}")
-    
+def list_stock_options_by_exp_date(ticker: str, exp_date: str) -> pd.DataFrame:
+    """Lists all stock options given an expiration date"""
+    url = (
+        f"https://opcoes.net.br/listaopcoes/completa?idAcao={ticker}"
+        f"&listarVencimentos=False&cotacoes=true&vencimentos={exp_date}"
+    )
+
     r = requests.get(url).json()
     data = [[ticker, exp_date, i[0].split("_")[0], i[2], i[3], i[5], i[8], i[9]] for i in r["data"]["cotacoesOpcoes"]]
     return pd.DataFrame(
@@ -112,10 +102,8 @@ def list_stock_options_by_exp_date(ticker, exp_date):
     )
 
 
-def list_stock_options(ticker, future_dt):
-    """
-    Fetches all stock options until a defined future date
-    """
+def list_stock_options(ticker: str, future_dt: str) -> pd.DataFrame:
+    """Fetches all stock options until a defined future date"""
     url = f"https://opcoes.net.br/listaopcoes/completa?idAcao={ticker}&listarVencimentos=true&cotacoes=true"
     r = requests.get(url).json()
     vencimentos = [i["value"] for i in r["data"]["vencimentos"] if i["value"] <= future_dt]
@@ -123,7 +111,7 @@ def list_stock_options(ticker, future_dt):
     return data.dropna()
 
 
-def get_options_data(ticker_list, future_dt):
+def get_options_data(ticker_list: List, future_dt: str) -> pd.DataFrame:
     options = []
     ticker_exceptions_message = ""
     logger = custom_logger()
@@ -154,9 +142,10 @@ def get_options_data(ticker_list, future_dt):
     return df_options
 
 
-def stock_price_probability_given_distribution(row):
+def stock_price_probability_given_distribution(row: pd.Series) -> float:
     """
-    Computes the probability of a stock price being above a threshold given past data distribution.
+    Computes the probability of a stock price being above a threshold
+    given past data distribution.
     """
     configs = get_airtable_data("config")
     configs = configs.set_index("key").T.to_dict()
@@ -175,34 +164,27 @@ def stock_price_probability_given_distribution(row):
         media = tmp_df["return"].mean()
         return_periodo = strike / vlr_acao - 1
         z = (return_periodo - media) / desv
-        prob_acima = round(1 - norm.cdf(z), 2)
+        prob_acima = float(round(1 - norm.cdf(z), 2))
     except Exception:
         raise Exception("Falha ao computar probabilidade de preço da ação.")
 
     return prob_acima
 
 
-def push_df_to_datapane_reports(dfs_to_report, report_name):
-    """
-    Function to publish tables with strategies to the datapane reports
-    """
+def push_df_to_datapane_reports(dfs_to_report: dict[str, pd.DataFrame], report_name: str) -> NoReturn:
+    """Function to publish tables with strategies to the datapane reports"""
     api_key = os.environ["DATAPANE_API_KEY"]
     os.system(f"datapane login --token '{api_key}'")
 
     report = []
     for i in dfs_to_report.keys():
         if len(dfs_to_report[i]) > 0:
-            # report.append(i)
-            # report.append(dp.DataTable(dfs_to_report[i]))
-            # report.append(dp.Text(i))
             report.append(dp.HTML(f'<h2>{i}</h2>'))
             report.append(dp.DataTable(dfs_to_report[i]))
-
-    # dp.Report(*report).upload(name=report_name)
     dp.upload_report(report, name=report_name)
 
 
-def upload_data_bitdotio(df, table_name, recommendation_dt, days_to_keep):
+def upload_data_bitdotio(df: pd.DataFrame, table_name: str, recommendation_dt: str, days_to_keep: float) -> NoReturn:
     """
     Function to clear past recommendation given a threshold & load new data
     into tables hosted in bit.io.

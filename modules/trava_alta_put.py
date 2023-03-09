@@ -1,10 +1,8 @@
-"""
-Module with functions to compute the strategy
-"""
+""" Module with functions to compute the strategy """
 import pandas as pd
 
 
-def trava_de_alta_com_put(trava_alta_put):
+def trava_de_alta_com_put(trava_alta_put: pd.DataFrame) -> pd.DataFrame:
     """
     Function to compute the strategy of trava de alta com put
     """

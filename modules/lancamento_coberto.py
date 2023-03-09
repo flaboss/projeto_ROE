@@ -1,7 +1,7 @@
-"""
-Module with functions to compute the strategy
-"""
+""" Module with functions to compute the strategy """
 from datetime import date
+
+import pandas as pd
 
 from utils import get_airtable_data
 from utils import get_stock_price
@@ -14,7 +14,7 @@ configs = get_airtable_data("config")
 configs = configs.set_index("key").T.to_dict()
 
 
-def lancamento_coberto_acoes_em_custodia(df):
+def lancamento_coberto_acoes_em_custodia(df: pd.DataFrame) -> pd.DataFrame:
     """
     Function to compute covered call strategy of stocks in custody
     """
@@ -64,7 +64,7 @@ def lancamento_coberto_acoes_em_custodia(df):
     return l_coberto_carteira
 
 
-def lancamento_coberto_estrategia_OTM(df):
+def lancamento_coberto_estrategia_OTM(df: pd.DataFrame) -> pd.DataFrame:
     """
     Function to compute OTM covered call strategies
     """
@@ -85,7 +85,7 @@ def lancamento_coberto_estrategia_OTM(df):
     return l_coberto_OTM
 
 
-def lancamento_coberto_custo_final(df):
+def lancamento_coberto_custo_final(df: pd.DataFrame) -> pd.DataFrame:
     """
     Function to compute covered call strategy based on the final cost
     """

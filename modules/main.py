@@ -1,6 +1,4 @@
-"""
-Main module to run the entire pipeline
-"""
+""" Main module to run the entire pipeline """
 
 import datetime
 from datetime import date
