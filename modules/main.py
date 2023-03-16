@@ -13,6 +13,7 @@ from trava_alta_put import trava_de_alta_com_put
 from utils import custom_logger
 from utils import get_airtable_data
 from utils import get_options_data
+from utils import get_stock_price
 from utils import get_tickers_to_be_processed
 from utils import push_df_to_datapane_reports
 from utils import send_push_notification
@@ -225,16 +226,17 @@ else:
 ###
 # REPORT
 ###
-try:
-    push_df_to_datapane_reports(dfs_to_report, "Estrategias de Opções")
-except Exception:
-    send_push_notification("Estratégia de opções", "Falha ao gerar relatório no Datapane.")
-    raise Exception("Falha ao gerar relatório no Datapane.")
+if deciders["UPDATE_REPORT"]["value"] is True:
+    try:
+        push_df_to_datapane_reports(dfs_to_report, "Estrategias de Opções")
+        logger.info("Datapane report updated successfully.")
+    except Exception:
+        send_push_notification("Estratégia de opções", "Falha ao gerar relatório no Datapane.")
+        raise Exception("Falha ao gerar relatório no Datapane.")
 
 ###
 # NOTIFICATIONS
 ###
-
 title = "Estratégia de opções"
 message = (
     "Estratégias de Opções Executada com sucesso! https://datapane.com/reports/E7ywxlA/estrategias-de-op%C3%A7%C3%B5es/"
@@ -245,3 +247,30 @@ if deciders["SEND_PUSH_NOTIFICATION"]["value"] is True:
 
 if deciders["SEND_TELEGRAM_NOTIFICATION"]["value"] is True:
     send_telegram_message(message)
+
+###
+# STOCK PRICE ALERTS
+###
+if deciders["SEND_STOCK_PRICE_ALERT"]["value"] is True:
+    logger.info("Checking selected stock prices to send alerts")
+    df_stock_alerts = get_airtable_data('price_alert')
+    df_stock_alerts = df_stock_alerts[df_stock_alerts.alert == True]  # Noqa: E712
+    stock_price_alert = ""
+
+    for row in df_stock_alerts.iterrows():
+        ticker = row[1].ticker
+        threshold = float(row[1].threshold)
+        above_below = row[1].above_below.strip()
+        stock_price = round(get_stock_price(ticker), 2)
+
+        if above_below == 'above' and stock_price > threshold:
+            stock_price_alert += f"\n-ALERT: {ticker} price is R${stock_price} above the threshold of R${threshold}"
+
+        if above_below == 'below' and stock_price < threshold:
+            stock_price_alert += f"\n-ALERT: {ticker} price is R${stock_price} below the threshold of R${threshold}"
+
+    if stock_price_alert != "":
+        send_push_notification(title, stock_price_alert)
+        send_telegram_message(stock_price_alert)
+else:
+    logger.info("Stock alerts will not be sent.")
